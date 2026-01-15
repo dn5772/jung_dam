@@ -48,7 +48,7 @@ export default function Home() {
                 <p data-aos="fade-up" data-aos-delay="100">We are team of talented designers making websites with Bootstrap</p>
                 <div className="d-flex" data-aos="fade-up" data-aos-delay="200">
                   <a href="#book-a-table" className="btn-get-started">Book a Table</a>
-                  <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" className="glightbox btn-watch-video d-flex align-items-center"><i className="bi bi-play-circle"></i><span>Watch Video</span></a>
+                  <a href="https://youtu.be/xu4JsZpwk84?si=kZ2AKM4WGC_6SL7l" className="glightbox btn-watch-video d-flex align-items-center"><i className="bi bi-play-circle"></i><span>Watch Video</span></a>
                 </div>
               </div>
               <div className="col-lg-5 order-1 order-lg-2 hero-img" data-aos="zoom-out">
@@ -193,8 +193,8 @@ export default function Home() {
               {/* Dak-galbi */}
               <div className="tab-pane fade active show" id="menu-Dak-galbi">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Dak-galbi</h3>
+                  <p>Korean stir-fried chicken cooked with vegetables and rice cakes.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">
@@ -233,8 +233,8 @@ export default function Home() {
               {/* Tteokbokki */}
               <div className="tab-pane fade" id="menu-Tteokbokki">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Tteokbokki</h3>
+                  <p>Chewy rice cakes simmered in a sweet and spicy Korean chili sauce.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">
@@ -272,8 +272,8 @@ export default function Home() {
               {/* Main Dishes */}
               <div className="tab-pane fade" id="menu-main-dishes">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Main dishes</h3>
+                  <p className="ingredients">Hearty Korean dishes perfect for sharing.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">
@@ -312,8 +312,8 @@ export default function Home() {
               {/* Stir-Fried */}
               <div className="tab-pane fade" id="menu-stir-fried">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Stir-Fried</h3>
+                  <p>Korean stir-fried dishes, sweet, savory, or spicy.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">
@@ -352,8 +352,8 @@ export default function Home() {
               {/* Soup & Stew */}
               <div className="tab-pane fade" id="menu-soup-stew">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Soup & Stew</h3>
+                  <p>Warm and comforting Korean soups and stews.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">
@@ -392,8 +392,8 @@ export default function Home() {
               {/* Stone Pot */}
               <div className="tab-pane fade" id="menu-stone-pot">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Stone Pot</h3>
+                  <p>Served sizzling hot in a traditional stone bowl.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">
@@ -432,8 +432,8 @@ export default function Home() {
               {/* Fried */}
               <div className="tab-pane fade" id="menu-fried">
                 <div className="tab-header text-center">
-                  <p>Menu</p>
                   <h3>Fried</h3>
+                  <p>Korean-style fried dishes.</p>
                 </div>
                 <div className="row gy-5">
                   <div className="col-lg-4 menu-item">

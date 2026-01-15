@@ -1,12 +1,12 @@
 import { Geist, Geist_Mono } from "next/font/google";
 // import { PT_Mono, preconnect_Mono} from 'next/font/google';
 import "./globals.css";
-import "./css/main.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "aos/dist/aos.css";
 import "glightbox/dist/css/glightbox.min.css";
 import "swiper/css";
+import "./css/main.css";
 import Script from 'next/script';
 import YummyScripts from "../components/YummyScripts";
 import { Roboto, Inter, Amatic_SC } from 'next/font/google';
@@ -42,7 +42,7 @@ const amaticSC = Amatic_SC({
 
 export const metadata = {
   title: "Jung Dam",
-  description: "Jung Dam Restaurant in Auckland",
+  description: "Jung Dam Korean Restaurant in Auckland",
 };
 
 export default function RootLayout({ children }) {

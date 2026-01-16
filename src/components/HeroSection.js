@@ -7,7 +7,7 @@ export default function HeroSection() {
             <h1 data-aos="fade-up">Where Korean Flavors<br />Meet Heart</h1>
             <p data-aos="fade-up" data-aos-delay="100">At JungDam, we bring the warmth and care of Korean home cooking to your table.</p>
             <div className="d-flex" data-aos="fade-up" data-aos-delay="200">
-              <a href="#book-a-table" className="btn-get-started">Book a Table</a>
+              <a href="tel:+6494417080" className="btn-get-started">Book a Table</a>
               <a href="https://youtu.be/xu4JsZpwk84?si=kZ2AKM4WGC_6SL7l" className="glightbox btn-watch-video d-flex align-items-center"><i className="bi bi-play-circle"></i><span>Watch Video</span></a>
             </div>
           </div>

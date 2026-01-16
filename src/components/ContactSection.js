@@ -9,7 +9,7 @@ export default function ContactSection() {
         <div className="mb-5">
           <iframe
             style={{ width: "100%", height: "400px" }}
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6392.606848229572!2d174.73737699999998!3d-36.7632878!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d399a1e237b75%3A0xbc883ebee83bbb6b!2z7KCV64u0IEp1bmcgRGFtIGtvcmVhbiByZXN0YXVyYW50!5e0!3m2!1sko!2snz!4v1768427448011!5m2!1sko!2snz"
+            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d25569.624427299554!2d174.7255296!3d-36.765696!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d399a1e237b75%3A0xbc883ebee83bbb6b!2z7KCV64u0IEp1bmcgRGFtIGtvcmVhbiByZXN0YXVyYW50!5e0!3m2!1sen!2snz!4v1768595330134!5m2!1sen!2snz"
             frameBorder="0"
             allowFullScreen=""
           ></iframe>

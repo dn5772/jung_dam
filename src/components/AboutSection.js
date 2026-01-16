@@ -11,7 +11,7 @@ export default function AboutSection() {
             <img src="/img/about.png" className="img-fluid mb-4" alt="" />
             <div className="book-a-table">
               <h3>Book a Table</h3>
-              <p>+64 9 441 7080</p>
+              <p><a href="tel:+6494417080">+64 9 441 7080</a></p>
             </div>
           </div>
           <div className="col-lg-5" data-aos="fade-up" data-aos-delay="250">

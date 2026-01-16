@@ -41,7 +41,7 @@ export default function Home() {
             </ul>
             <i className="mobile-nav-toggle d-xl-none bi bi-list"></i>
           </nav>
-          <a className="btn-getstarted" href="#book-a-table">Book a Table</a>
+          <a className="btn-getstarted" href="tel:+6494417080">Book a Table</a>
         </div>
       </header>
 

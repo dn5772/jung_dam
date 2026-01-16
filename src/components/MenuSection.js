@@ -77,7 +77,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/Dak-galbi/Salt-Grilled Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Salt-Grilled Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/Dak-galbi/Salt-Grilled Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Salt-Grilled Dak-galbi</h4>
                 <p className="ingredients">
                   Chicken stir-fried with sesame oil and salt marinade.
@@ -87,7 +87,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/Dak-galbi/Creamy Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Creamy Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/Dak-galbi/Creamy Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Creamy Dak-galbi</h4>
                 <p className="ingredients">
                   Tender chicken and vegetables in a rich gochujang Alfredo sauce.
@@ -106,7 +106,7 @@ export default function MenuSection() {
             </div>
             <div className="row gy-5">
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/Tteokbokki/Original Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Original Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/Tteokbokki/Original Tteokbokki.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Original Tteokbokki</h4>
                 <p className="ingredients">
                   Rice cakes cooked in a sweet and spicy sauce.
@@ -116,7 +116,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/Tteokbokki/Beef Brisket Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Beef Brisket Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/Tteokbokki/Beef Brisket Tteokbokki.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Beef Brisket Tteokbokki</h4>
                 <p className="ingredients">
                   Tteokbokki topped with sliced beef brisket.
@@ -126,7 +126,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/Tteokbokki/Donkatsu Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Donkatsu Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/Tteokbokki/Donkatsu Tteokbokki.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Donkatsu Tteokbokki</h4>
                 <p className="ingredients">
                   Tteokbokki served with crispy pork cutlet.
@@ -136,7 +136,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/Tteokbokki/Rose Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Rose Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/Tteokbokki/Rose Tteokbokki.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Rose Tteokbokki</h4>
                 <p className="ingredients">
                   Creamy rose-style sauce with rice cakes.
@@ -155,7 +155,7 @@ export default function MenuSection() {
             </div>
             <div className="row gy-5">
               <div className="col-lg-2 menu-item">
-                <a href="/img/menu/main-dishes/Army Stew (Budae Jjigae).png" className="glightbox"><img src="/img/menu/main-dishes/Army Stew (Budae Jjigae).png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/main-dishes/Army Stew (Budae Jjigae).png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Army Stew (Budae Jjigae)</h4>
                 <p className="ingredients">
                   Spicy stew with spam, sausage, cheese, and ramen noodles.
@@ -165,7 +165,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-2 menu-item">
-                <a href="/img/menu/main-dishes/Seafood Soft Tofu Hotpot.png" className="glightbox"><img src="/img/menu/main-dishes/Seafood Soft Tofu Hotpot.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/main-dishes/Seafood Soft Tofu Hotpot.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Seafood Soft Tofu Hotpot</h4>
                 <p className="ingredients">
                   Hotpot with seafood, soft tofu, and vegetables.
@@ -175,7 +175,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-2 menu-item">
-                <a href="/img/menu/main-dishes/Soy Braised Chicken (Jjimdak).png" className="glightbox"><img src="/img/menu/main-dishes/Soy Braised Chicken (Jjimdak).png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/main-dishes/Soy Braised Chicken (Jjimdak).png" className="glightbox"><img src="/img/menu/main-dishes/Soy Braised Chicken.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Soy Braised Chicken (Jjimdak)</h4>
                 <p className="ingredients">
                   Chicken braised in a savory soy-based sauce.
@@ -234,7 +234,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/stir-fried/Stir-Fried Chicken.png" className="glightbox"><img src="/img/menu/stir-fried/Stir-Fried Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stir-fried/Stir-Fried Chicken.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Stir-Fried Chicken</h4>
                 <p className="ingredients">
                   Stir-fried chicken and vegetables marinated in a soy or spicy sauce.
@@ -254,7 +254,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/stir-fried/Squid & Pork Belly Stir-Fry.png" className="glightbox"><img src="/img/menu/stir-fried/Squid & Pork Belly Stir-Fry.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stir-fried/Squid & Pork Belly Stir-Fry.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Squid & Pork Belly Stir-Fry</h4>
                 <p className="ingredients">
                   Stir-fried squid, pork belly, and vegetables in a soy or spicy sauce.
@@ -274,7 +274,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/stir-fried/Japchae.png" className="glightbox"><img src="/img/menu/stir-fried/Japchae.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stir-fried/Japchae.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Japchae</h4>
                 <p className="ingredients">
                   Stir-fried glass noodles with vegetables.
@@ -294,7 +294,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/stir-fried/Semi-Dried Pollock Stir-Fry.png" className="glightbox"><img src="/img/menu/stir-fried/Semi-Dried Pollock Stir-Fry.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stir-fried/Semi-Dried Pollock Stir-Fry.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Semi-Dried Pollock Stir-Fry</h4>
                 <p className="ingredients">
                   Naturally semi-dried pollock with a tender, chewy texture.
@@ -323,7 +323,7 @@ export default function MenuSection() {
             </div>
             <div className="row gy-5">
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Lamb Nutrition Soup.png" className="glightbox"><img src="/img/menu/soup-stew/Lamb Nutrition Soup.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Lamb Nutrition Soup.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Lamb Nutrition Soup</h4>
                 <p className="ingredients">
                   Rich lamb broth soup made with tender lamb.
@@ -333,7 +333,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Fish Roe Soup (Altang).png" className="glightbox"><img src="/img/menu/soup-stew/Fish Roe Soup (Altang).png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Fish Roe Soup (Altang).png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Fish Roe Soup (Altang)</h4>
                 <p className="ingredients">
                   Spicy or non-spicy soup with fish roe.
@@ -343,7 +343,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Beef Soft Tofu Stew.png" className="glightbox"><img src="/img/menu/soup-stew/Beef Soft Tofu Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Beef Soft Tofu Stew.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Beef Soft Tofu Stew</h4>
                 <p className="ingredients">
                   Spicy soft tofu stew with sliced beef.
@@ -353,7 +353,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Kimchi Stew.png" className="glightbox"><img src="/img/menu/soup-stew/Kimchi Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Kimchi Stew.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Kimchi Stew</h4>
                 <p className="ingredients">
                   Kimchi stew with pork and tofu.
@@ -363,7 +363,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Hot Pot Bulgogi.png" className="glightbox"><img src="/img/menu/soup-stew/Hot Pot Bulgogi.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Hot Pot Bulgogi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Hot Pot Bulgogi</h4>
                 <p className="ingredients">
                   Bulgogi served in a hot pot with vegetables and glass noodles.
@@ -393,7 +393,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Seafood Soft Tofu Stew.png" className="glightbox"><img src="/img/menu/soup-stew/Seafood Soft Tofu Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Seafood Soft Tofu Stew.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Seafood Soft Tofu Stew</h4>
                 <p className="ingredients">
                   Spicy soft tofu stew with seafood.
@@ -403,7 +403,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Spicy Beef Soup (Yukgaejang).png" className="glightbox"><img src="/img/menu/soup-stew/Spicy Beef Soup (Yukgaejang).png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Spicy Beef Soup (Yukgaejang).png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Spicy Beef Soup (Yukgaejang)</h4>
                 <p className="ingredients">
                   Spicy soup with beef, brisket, and glass noodles.
@@ -433,7 +433,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/soup-stew/Spicy Cold Noodles.png" className="glightbox"><img src="/img/menu/soup-stew/Spicy Cold Noodles.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/soup-stew/Spicy Cold Noodles.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Spicy Cold Noodles</h4>
                 <p className="ingredients">
                   House special cold noodles with a spicy kick.
@@ -452,7 +452,7 @@ export default function MenuSection() {
             </div>
             <div className="row gy-5">
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/stone-pot/Bibimbap.png" className="glightbox"><img src="/img/menu/stone-pot/Bibimbap.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stone-pot/Bibimbap.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Bibimbap</h4>
                 <p className="ingredients">
                   Rice topped with assorted vegetables and beef mince, mixed with gochujang.
@@ -462,7 +462,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/stone-pot/Fish Roe Rice (Albap).png" className="glightbox"><img src="/img/menu/stone-pot/Fish Roe Rice (Albap).png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stone-pot/Fish Roe Rice (Albap).png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Fish Roe Rice (Albap)</h4>
                 <p className="ingredients">
                   Rice topped with fish roe, kimchi, pickled radish, and crab meat.
@@ -472,7 +472,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/stone-pot/Stone Pot Bibimbap.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Bibimbap.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stone-pot/Stone Pot Bibimbap.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Stone Pot Bibimbap</h4>
                 <p className="ingredients">
                   Sizzling rice with assorted vegetables and beef mince, mixed with gochujang.
@@ -492,7 +492,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/stone-pot/Stone Pot Chicken Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Chicken Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stone-pot/Stone Pot Chicken Rice Bowl.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Stone Pot Chicken Rice Bowl</h4>
                 <p className="ingredients">
                   Rice topped with stir-fried chicken marinated in a soy or spicy sauce.
@@ -502,7 +502,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/stone-pot/Stone Pot Squid Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Squid Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stone-pot/Stone Pot Squid Rice Bowl.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Stone Pot Squid Rice Bowl</h4>
                 <p className="ingredients">
                   Rice topped with stir-fried squid marinated in a soy or spicy sauce.
@@ -512,7 +512,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/stone-pot/Stone Pot Pork Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Pork Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stone-pot/Stone Pot Pork Rice Bowl.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Stone Pot Pork Rice Bowl</h4>
                 <p className="ingredients">
                   Rice topped with stir-fried pork marinated in a soy or spicy sauce.
@@ -571,7 +571,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/fried/Garlic Soy Chicken.png" className="glightbox"><img src="/img/menu/fried/Garlic Soy Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/fried/Garlic Soy Chicken.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Garlic Soy Chicken</h4>
                 <p className="ingredients">
                   Fried chicken glazed in garlic soy sauce.
@@ -591,8 +591,8 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/fried/Pork Cutlet (Donkatsu).png" className="glightbox"><img src="/img/menu/fried/Pork Cutlet (Donkatsu).png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Pork Cutlet (Donkatsu)</h4>
+                <a href="/img/menu/fried/Donkatsu.png" className="glightbox"><img src="/img/menu/fried/Donkatsu.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Donkatsu</h4>
                 <p className="ingredients">
                   Breaded and deep-fried pork cutlet.
                 </p>
@@ -601,8 +601,8 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/fried/King Size Pork Cutlet.png" className="glightbox"><img src="/img/menu/fried/King Size Pork Cutlet.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>King Size Pork Cutlet</h4>
+                <a href="/img/menu/fried/King Size Donkatsu.png" className="glightbox"><img src="/img/menu/fried/King Size Donkatsu.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>King Size Donkatsu</h4>
                 <p className="ingredients">
                   Extra-large breaded pork cutlet.
                 </p>
@@ -670,7 +670,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/appetizers/Steamed Egg.png" className="glightbox"><img src="/img/menu/appetizers/Steamed Egg.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/appetizers/Steamed Egg.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Steamed Egg</h4>
                 <p className="ingredients">
                   Soft and fluffy Korean-style steamed egg.
@@ -700,7 +700,7 @@ export default function MenuSection() {
                 </p>
               </div>
               <div className="col-lg-3 menu-item">
-                <a href="/img/menu/appetizers/Hot Dog.png" className="glightbox"><img src="/img/menu/appetizers/Hot Dog.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/appetizers/Hot Dog.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Hot Dog</h4>
                 <p className="ingredients">
                   Korean-style deep-fried hot dog.

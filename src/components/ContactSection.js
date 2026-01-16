@@ -36,7 +36,10 @@ export default function ContactSection() {
           <div className="col-md-6">
             <div className="info-item d-flex align-items-center" data-aos="fade-up" data-aos-delay="400">
               <i className="icon bi bi-envelope flex-shrink-0"></i>
-              <div></div>
+              <div>
+                <h3>Email Us</h3>
+                <p>jungdam534@gmail.com</p>
+              </div>
             </div>
           </div>
           <div className="col-md-6">

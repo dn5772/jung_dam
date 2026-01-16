@@ -42,6 +42,11 @@ export default function MenuSection() {
               <h4>Fried</h4>
             </a>
           </li>
+          <li className="nav-item">
+            <a className="nav-link" data-bs-toggle="tab" data-bs-target="#menu-appetizers">
+              <h4>Appetizers</h4>
+            </a>
+          </li>
         </ul>
         <div className="tab-content" data-aos="fade-up" data-aos-delay="200">
           {/* Dak-galbi */}
@@ -51,34 +56,44 @@ export default function MenuSection() {
               <p>Korean stir-fried chicken cooked with vegetables and rice cakes.</p>
             </div>
             <div className="row gy-5">
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-1.png" className="glightbox"><img src="/img/menu/menu-item-1.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Spicy Dak-galbi</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Dak-galbi/Original Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Original Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Original Dak-galbi</h4>
                 <p className="ingredients">
-                  Stir-fried chicken with vegetables, sweet potato, cabbage in spicy sauce
+                  Spicy stir-fried chicken with vegetables and rice cakes.
                 </p>
                 <p className="price">
-                  $18.95
+                  M $57 (2 people) / L $72 (3 people)
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-2.png" className="glightbox"><img src="/img/menu/menu-item-2.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Beef Dak-galbi</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Dak-galbi/Cheese Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Cheese Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Cheese Dak-galbi</h4>
                 <p className="ingredients">
-                  Stir-fried beef with vegetables, rice cakes, sweet potato in mild sauce
+                  Spicy chicken stir-fry topped with melted cheese.
                 </p>
                 <p className="price">
-                  $20.95
+                  M $65 / L $79
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-3.png" className="glightbox"><img src="/img/menu/menu-item-3.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Seafood Dak-galbi</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Dak-galbi/Salt-Grilled Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Salt-Grilled Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Salt-Grilled Dak-galbi</h4>
                 <p className="ingredients">
-                  Stir-fried seafood with vegetables, noodles, cabbage in spicy sauce
+                  Chicken stir-fried with sesame oil and salt marinade.
                 </p>
                 <p className="price">
-                  $22.95
+                  M $57 / L $72
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Dak-galbi/Creamy Dak-galbi.png" className="glightbox"><img src="/img/menu/Dak-galbi/Creamy Dak-galbi.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Creamy Dak-galbi</h4>
+                <p className="ingredients">
+                  Tender chicken and vegetables in a rich gochujang Alfredo sauce.
+                </p>
+                <p className="price">
+                  M $65 / L $79
                 </p>
               </div>
             </div>
@@ -90,34 +105,44 @@ export default function MenuSection() {
               <p>Chewy rice cakes simmered in a sweet and spicy Korean chili sauce.</p>
             </div>
             <div className="row gy-5">
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-1.png" className="glightbox"><img src="/img/menu/menu-item-1.png" className="menu-img img-fluid" alt=""/></a>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Tteokbokki/Original Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Original Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Original Tteokbokki</h4>
                 <p className="ingredients">
-                  Spicy rice cakes with fish cakes, boiled eggs, vegetables in gochujang sauce
+                  Rice cakes cooked in a sweet and spicy sauce.
                 </p>
                 <p className="price">
-                  $12.95
+                  M $48
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-2.png" className="glightbox"><img src="/img/menu/menu-item-2.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Cream Tteokbokki</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Tteokbokki/Beef Brisket Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Beef Brisket Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Beef Brisket Tteokbokki</h4>
                 <p className="ingredients">
-                  Rice cakes in creamy white sauce with cheese, vegetables, and ham
+                  Tteokbokki topped with sliced beef brisket.
                 </p>
                 <p className="price">
-                  $14.95
+                  M $59
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-3.png" className="glightbox"><img src="/img/menu/menu-item-3.png" className="menu-img img-fluid" alt=""/></a>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Tteokbokki/Donkatsu Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Donkatsu Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Donkatsu Tteokbokki</h4>
+                <p className="ingredients">
+                  Tteokbokki served with crispy pork cutlet.
+                </p>
+                <p className="price">
+                  M $59
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/Tteokbokki/Rose Tteokbokki.png" className="glightbox"><img src="/img/menu/Tteokbokki/Rose Tteokbokki.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Rose Tteokbokki</h4>
                 <p className="ingredients">
-                  Rice cakes in sweet and spicy rose sauce with cheese and vegetables
+                  Creamy rose-style sauce with rice cakes.
                 </p>
                 <p className="price">
-                  $15.95
+                  M $59
                 </p>
               </div>
             </div>
@@ -129,34 +154,64 @@ export default function MenuSection() {
               <p className="ingredients">Hearty Korean dishes perfect for sharing.</p>
             </div>
             <div className="row gy-5">
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-4.png" className="glightbox"><img src="/img/menu/menu-item-4.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Bulgogi</h4>
+              <div className="col-lg-2 menu-item">
+                <a href="/img/menu/main-dishes/Army Stew (Budae Jjigae).png" className="glightbox"><img src="/img/menu/main-dishes/Army Stew (Budae Jjigae).png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Army Stew (Budae Jjigae)</h4>
                 <p className="ingredients">
-                  Marinated grilled beef with vegetables, served with rice and side dishes
+                  Spicy stew with spam, sausage, cheese, and ramen noodles.
                 </p>
                 <p className="price">
-                  $19.95
+                  M $65 / L $73
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-5.png" className="glightbox"><img src="/img/menu/menu-item-5.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Galbi</h4>
+              <div className="col-lg-2 menu-item">
+                <a href="/img/menu/main-dishes/Seafood Soft Tofu Hotpot.png" className="glightbox"><img src="/img/menu/main-dishes/Seafood Soft Tofu Hotpot.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Seafood Soft Tofu Hotpot</h4>
                 <p className="ingredients">
-                  Grilled short ribs marinated in sweet soy sauce with steamed rice
+                  Hotpot with seafood, soft tofu, and vegetables.
                 </p>
                 <p className="price">
-                  $24.95
+                  M $68
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-6.png" className="glightbox"><img src="/img/menu/menu-item-6.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Samgyetang</h4>
+              <div className="col-lg-2 menu-item">
+                <a href="/img/menu/main-dishes/Soy Braised Chicken (Jjimdak).png" className="glightbox"><img src="/img/menu/main-dishes/Soy Braised Chicken (Jjimdak).png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Soy Braised Chicken (Jjimdak)</h4>
                 <p className="ingredients">
-                  Ginseng chicken soup with rice, jujube, garlic, and ginseng
+                  Chicken braised in a savory soy-based sauce.
                 </p>
                 <p className="price">
-                  $21.95
+                  M $72 / L $84
+                </p>
+              </div>
+              <div className="col-lg-2 menu-item">
+                <a href="/img/menu/main-dishes/Spicy Braised Chicken.png" className="glightbox"><img src="/img/menu/main-dishes/Spicy Braised Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Spicy Braised Chicken</h4>
+                <p className="ingredients">
+                  Chicken braised in a spicy sauce with vegetables.
+                </p>
+                <p className="price">
+                  M $70 / L $82
+                </p>
+              </div>
+              <div className="col-lg-2 menu-item">
+                <a href="/img/menu/main-dishes/Fish Cake Hotpot.png" className="glightbox"><img src="/img/menu/main-dishes/Fish Cake Hotpot.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Fish Cake Hotpot</h4>
+                <p className="ingredients">
+                  Fish cake hotpot with seafood in a deep broth.
+                </p>
+                <p className="price">
+                  M $68
+                </p>
+              </div>
+              <div className="col-lg-2 menu-item">
+                <a href="/img/menu/main-dishes/Spicy Pork Bone Stew.png" className="glightbox"><img src="/img/menu/main-dishes/Spicy Pork Bone Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Spicy Pork Bone Stew</h4>
+                <p className="ingredients">
+                  Spicy pork bone stew with vegetables.
+                </p>
+                <p className="price">
+                  M $62
                 </p>
               </div>
             </div>
@@ -169,33 +224,93 @@ export default function MenuSection() {
             </div>
             <div className="row gy-5">
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-1.png" className="glightbox"><img src="/img/menu/menu-item-1.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Kimchi Bokkeumbap</h4>
+                <a href="/img/menu/stir-fried/Stir-Fried Pork.png" className="glightbox"><img src="/img/menu/stir-fried/Stir-Fried Pork.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stir-Fried Pork</h4>
                 <p className="ingredients">
-                  Stir-fried rice with kimchi, vegetables, and choice of protein
+                  Stir-fried pork and vegetables marinated in a soy or spicy sauce.
                 </p>
                 <p className="price">
-                  $13.95
+                  $25
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-2.png" className="glightbox"><img src="/img/menu/menu-item-2.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Dwaeji Bulgogi</h4>
+                <a href="/img/menu/stir-fried/Stir-Fried Chicken.png" className="glightbox"><img src="/img/menu/stir-fried/Stir-Fried Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stir-Fried Chicken</h4>
                 <p className="ingredients">
-                  Stir-fried pork with vegetables in sweet and spicy sauce
+                  Stir-fried chicken and vegetables marinated in a soy or spicy sauce.
                 </p>
                 <p className="price">
-                  $16.95
+                  $25
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-3.png" className="glightbox"><img src="/img/menu/menu-item-3.png" className="menu-img img-fluid" alt=""/></a>
+                <a href="/img/menu/stir-fried/Stir-Fried Squid.png" className="glightbox"><img src="/img/menu/stir-fried/Stir-Fried Squid.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stir-Fried Squid</h4>
+                <p className="ingredients">
+                  Stir-fried squid and vegetables marinated in a soy or spicy sauce.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/stir-fried/Squid & Pork Belly Stir-Fry.png" className="glightbox"><img src="/img/menu/stir-fried/Squid & Pork Belly Stir-Fry.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Squid & Pork Belly Stir-Fry</h4>
+                <p className="ingredients">
+                  Stir-fried squid, pork belly, and vegetables in a soy or spicy sauce.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/stir-fried/Bulgogi.png" className="glightbox"><img src="/img/menu/stir-fried/Bulgogi.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Bulgogi</h4>
+                <p className="ingredients">
+                  Stir-fried beef and vegetables marinated in a sweet soy-based sauce.
+                </p>
+                <p className="price">
+                  $28
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/stir-fried/Japchae.png" className="glightbox"><img src="/img/menu/stir-fried/Japchae.png" className="menu-img img-fluid" alt=""/></a>
                 <h4>Japchae</h4>
                 <p className="ingredients">
-                  Stir-fried glass noodles with vegetables and choice of beef or tofu
+                  Stir-fried glass noodles with vegetables.
                 </p>
                 <p className="price">
-                  $15.95
+                  $24
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/stir-fried/Galbi-Style Pork Belly.png" className="glightbox"><img src="/img/menu/stir-fried/Galbi-Style Pork Belly.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Galbi-Style Pork Belly</h4>
+                <p className="ingredients">
+                  Pork belly cooked in a traditional soy-based sauce with garlic and fruit.
+                </p>
+                <p className="price">
+                  $28
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/stir-fried/Semi-Dried Pollock Stir-Fry.png" className="glightbox"><img src="/img/menu/stir-fried/Semi-Dried Pollock Stir-Fry.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Semi-Dried Pollock Stir-Fry</h4>
+                <p className="ingredients">
+                  Naturally semi-dried pollock with a tender, chewy texture.
+                </p>
+                <p className="price">
+                  $30
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/stir-fried/Grilled Fish.png" className="glightbox"><img src="/img/menu/stir-fried/Grilled Fish.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Grilled Fish</h4>
+                <p className="ingredients">
+                  Grilled mackerel served with green onion oil.
+                </p>
+                <p className="price">
+                  $30
                 </p>
               </div>
             </div>
@@ -207,34 +322,124 @@ export default function MenuSection() {
               <p>Warm and comforting Korean soups and stews.</p>
             </div>
             <div className="row gy-5">
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-4.png" className="glightbox"><img src="/img/menu/menu-item-4.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Kimchi Jjigae</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Lamb Nutrition Soup.png" className="glightbox"><img src="/img/menu/soup-stew/Lamb Nutrition Soup.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Lamb Nutrition Soup</h4>
                 <p className="ingredients">
-                  Spicy kimchi stew with pork, tofu, and vegetables
+                  Rich lamb broth soup made with tender lamb.
                 </p>
                 <p className="price">
-                  $14.95
+                  $26
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-5.png" className="glightbox"><img src="/img/menu/menu-item-5.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Dwaeji Jjigae</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Fish Roe Soup (Altang).png" className="glightbox"><img src="/img/menu/soup-stew/Fish Roe Soup (Altang).png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Fish Roe Soup (Altang)</h4>
                 <p className="ingredients">
-                  Pork stew with vegetables and tofu in spicy broth
+                  Spicy or non-spicy soup with fish roe.
                 </p>
                 <p className="price">
-                  $15.95
+                  $26
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-6.png" className="glightbox"><img src="/img/menu/menu-item-6.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Miyeok Guk</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Beef Soft Tofu Stew.png" className="glightbox"><img src="/img/menu/soup-stew/Beef Soft Tofu Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Beef Soft Tofu Stew</h4>
                 <p className="ingredients">
-                  Seaweed soup with beef, served with rice
+                  Spicy soft tofu stew with sliced beef.
                 </p>
                 <p className="price">
-                  $12.95
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Kimchi Stew.png" className="glightbox"><img src="/img/menu/soup-stew/Kimchi Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Kimchi Stew</h4>
+                <p className="ingredients">
+                  Kimchi stew with pork and tofu.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Hot Pot Bulgogi.png" className="glightbox"><img src="/img/menu/soup-stew/Hot Pot Bulgogi.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Hot Pot Bulgogi</h4>
+                <p className="ingredients">
+                  Bulgogi served in a hot pot with vegetables and glass noodles.
+                </p>
+                <p className="price">
+                  $26
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Pork Bone Soup.png" className="glightbox"><img src="/img/menu/soup-stew/Pork Bone Soup.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Pork Bone Soup</h4>
+                <p className="ingredients">
+                  Hearty soup made with pork backbone and potatoes.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Clear Chicken Soup.png" className="glightbox"><img src="/img/menu/soup-stew/Clear Chicken Soup.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Clear Chicken Soup</h4>
+                <p className="ingredients">
+                  Mild and comforting Korean chicken soup.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Seafood Soft Tofu Stew.png" className="glightbox"><img src="/img/menu/soup-stew/Seafood Soft Tofu Stew.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Seafood Soft Tofu Stew</h4>
+                <p className="ingredients">
+                  Spicy soft tofu stew with seafood.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Spicy Beef Soup (Yukgaejang).png" className="glightbox"><img src="/img/menu/soup-stew/Spicy Beef Soup (Yukgaejang).png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Spicy Beef Soup (Yukgaejang)</h4>
+                <p className="ingredients">
+                  Spicy soup with beef, brisket, and glass noodles.
+                </p>
+                <p className="price">
+                  $26
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Seafood Noodle Soup.png" className="glightbox"><img src="/img/menu/soup-stew/Seafood Noodle Soup.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Seafood Noodle Soup</h4>
+                <p className="ingredients">
+                  Noodle soup with seafood and vegetables.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Cold Noodles.png" className="glightbox"><img src="/img/menu/soup-stew/Cold Noodles.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Cold Noodles</h4>
+                <p className="ingredients">
+                  Chilled noodle soup served with kimchi.
+                </p>
+                <p className="price">
+                  $22
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/soup-stew/Spicy Cold Noodles.png" className="glightbox"><img src="/img/menu/soup-stew/Spicy Cold Noodles.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Spicy Cold Noodles</h4>
+                <p className="ingredients">
+                  House special cold noodles with a spicy kick.
+                </p>
+                <p className="price">
+                  $22
                 </p>
               </div>
             </div>
@@ -246,34 +451,84 @@ export default function MenuSection() {
               <p>Served sizzling hot in a traditional stone bowl.</p>
             </div>
             <div className="row gy-5">
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-1.png" className="glightbox"><img src="/img/menu/menu-item-1.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Dolsot Bibimbap</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Bibimbap.png" className="glightbox"><img src="/img/menu/stone-pot/Bibimbap.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Bibimbap</h4>
                 <p className="ingredients">
-                  Mixed rice with vegetables, beef, and fried egg in hot stone pot
+                  Rice topped with assorted vegetables and beef mince, mixed with gochujang.
                 </p>
                 <p className="price">
-                  $16.95
+                  $24
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-2.png" className="glightbox"><img src="/img/menu/menu-item-2.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Stone Pot Kimchi Jjigae</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Fish Roe Rice (Albap).png" className="glightbox"><img src="/img/menu/stone-pot/Fish Roe Rice (Albap).png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Fish Roe Rice (Albap)</h4>
                 <p className="ingredients">
-                  Kimchi stew in stone pot with pork and tofu
+                  Rice topped with fish roe, kimchi, pickled radish, and crab meat.
                 </p>
                 <p className="price">
-                  $17.95
+                  $25
                 </p>
               </div>
-              <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-3.png" className="glightbox"><img src="/img/menu/menu-item-3.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Haemul Dolsot</h4>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Stone Pot Bibimbap.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Bibimbap.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stone Pot Bibimbap</h4>
                 <p className="ingredients">
-                  Seafood stone pot with mixed seafood and vegetables
+                  Sizzling rice with assorted vegetables and beef mince, mixed with gochujang.
                 </p>
                 <p className="price">
-                  $19.95
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Stone Pot Beef Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Beef Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stone Pot Beef Rice Bowl</h4>
+                <p className="ingredients">
+                  Rice topped with stir-fried beef marinated in a soy or spicy sauce.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Stone Pot Chicken Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Chicken Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stone Pot Chicken Rice Bowl</h4>
+                <p className="ingredients">
+                  Rice topped with stir-fried chicken marinated in a soy or spicy sauce.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Stone Pot Squid Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Squid Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stone Pot Squid Rice Bowl</h4>
+                <p className="ingredients">
+                  Rice topped with stir-fried squid marinated in a soy or spicy sauce.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Stone Pot Pork Rice Bowl.png" className="glightbox"><img src="/img/menu/stone-pot/Stone Pot Pork Rice Bowl.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Stone Pot Pork Rice Bowl</h4>
+                <p className="ingredients">
+                  Rice topped with stir-fried pork marinated in a soy or spicy sauce.
+                </p>
+                <p className="price">
+                  $25
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/stone-pot/Kimchi Fried Rice.png" className="glightbox"><img src="/img/menu/stone-pot/Kimchi Fried Rice.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Kimchi Fried Rice</h4>
+                <p className="ingredients">
+                  Fried rice with kimchi, topped with a sunny-side-up egg and seaweed.<br/>(Add bacon $5 / sausage $5 / cheese $7)
+                </p>
+                <p className="price">
+                  $24
                 </p>
               </div>
             </div>
@@ -286,33 +541,182 @@ export default function MenuSection() {
             </div>
             <div className="row gy-5">
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-4.png" className="glightbox"><img src="/img/menu/menu-item-4.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Korean Fried Chicken</h4>
+                <a href="/img/menu/fried/Fried Chicken.png" className="glightbox"><img src="/img/menu/fried/Fried Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Fried Chicken</h4>
                 <p className="ingredients">
-                  Crispy fried chicken with sweet and spicy sauce
+                  Classic Korean-style crispy fried chicken.<br/>(+$1 extra crispy)
                 </p>
                 <p className="price">
-                  $13.95
+                  $28
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-5.png" className="glightbox"><img src="/img/menu/menu-item-5.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Tempura</h4>
+                <a href="/img/menu/fried/Seasoned Chicken.png" className="glightbox"><img src="/img/menu/fried/Seasoned Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Seasoned Chicken</h4>
                 <p className="ingredients">
-                  Lightly battered and fried vegetables and seafood
+                  Fried chicken coated in sweet and spicy sauce.
                 </p>
                 <p className="price">
-                  $11.95
+                  $29
                 </p>
               </div>
               <div className="col-lg-4 menu-item">
-                <a href="/img/menu/menu-item-6.png" className="glightbox"><img src="/img/menu/menu-item-6.png" className="menu-img img-fluid" alt=""/></a>
-                <h4>Mandu</h4>
+                <a href="/img/menu/fried/Green Onion Chicken.png" className="glightbox"><img src="/img/menu/fried/Green Onion Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Green Onion Chicken</h4>
                 <p className="ingredients">
-                  Fried dumplings filled with vegetables and choice of meat
+                  Fried chicken topped with fresh green onions.
                 </p>
                 <p className="price">
-                  $9.95
+                  $29
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/fried/Garlic Soy Chicken.png" className="glightbox"><img src="/img/menu/fried/Garlic Soy Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Garlic Soy Chicken</h4>
+                <p className="ingredients">
+                  Fried chicken glazed in garlic soy sauce.
+                </p>
+                <p className="price">
+                  $29
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/fried/Honey Butter Chicken.png" className="glightbox"><img src="/img/menu/fried/Honey Butter Chicken.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Honey Butter Chicken</h4>
+                <p className="ingredients">
+                  Fried chicken coated in honey butter sauce.
+                </p>
+                <p className="price">
+                  $30
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/fried/Pork Cutlet (Donkatsu).png" className="glightbox"><img src="/img/menu/fried/Pork Cutlet (Donkatsu).png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Pork Cutlet (Donkatsu)</h4>
+                <p className="ingredients">
+                  Breaded and deep-fried pork cutlet.
+                </p>
+                <p className="price">
+                  $24
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/fried/King Size Pork Cutlet.png" className="glightbox"><img src="/img/menu/fried/King Size Pork Cutlet.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>King Size Pork Cutlet</h4>
+                <p className="ingredients">
+                  Extra-large breaded pork cutlet.
+                </p>
+                <p className="price">
+                  $39
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/fried/Seafood Pancake.png" className="glightbox"><img src="/img/menu/fried/Seafood Pancake.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Seafood Pancake</h4>
+                <p className="ingredients">
+                  Korean-style pancake with seafood and vegetables.
+                </p>
+                <p className="price">
+                  $28
+                </p>
+              </div>
+              <div className="col-lg-4 menu-item">
+                <a href="/img/menu/fried/Kimchi Pancake.png" className="glightbox"><img src="/img/menu/fried/Kimchi Pancake.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Kimchi Pancake</h4>
+                <p className="ingredients">
+                  Korean-style pancake made with kimchi.
+                </p>
+                <p className="price">
+                  $28
+                </p>
+              </div>
+            </div>
+          </div>
+          {/* Appetizers */}
+          <div className="tab-pane fade" id="menu-appetizers">
+            <div className="tab-header text-center">
+              <h3>Appetizers</h3>
+              <p>Delicious starters to begin your meal.</p>
+            </div>
+            <div className="row gy-5">
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Gyoza.png" className="glightbox"><img src="/img/menu/appetizers/Gyoza.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Gyoza</h4>
+                <p className="ingredients">
+                  Pan-fried dumplings.
+                </p>
+                <p className="price">
+                  $9
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Seaweed Roll.png" className="glightbox"><img src="/img/menu/appetizers/Seaweed Roll.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Seaweed Roll</h4>
+                <p className="ingredients">
+                  Deep-fried seaweed rolls.
+                </p>
+                <p className="price">
+                  $9
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Fried Shrimp.png" className="glightbox"><img src="/img/menu/appetizers/Fried Shrimp.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Fried Shrimp</h4>
+                <p className="ingredients">
+                  Crispy deep-fried shrimp.
+                </p>
+                <p className="price">
+                  $13
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Steamed Egg.png" className="glightbox"><img src="/img/menu/appetizers/Steamed Egg.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Steamed Egg</h4>
+                <p className="ingredients">
+                  Soft and fluffy Korean-style steamed egg.
+                </p>
+                <p className="price">
+                  $13
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Fish Roe Rice Balls.png" className="glightbox"><img src="/img/menu/appetizers/Fish Roe Rice Balls.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Fish Roe Rice Balls</h4>
+                <p className="ingredients">
+                  Rice balls mixed with fish roe and pickled radish.
+                </p>
+                <p className="price">
+                  $13
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Chicken Skewers.png" className="glightbox"><img src="/img/menu/appetizers/Chicken Skewers.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Chicken Skewers</h4>
+                <p className="ingredients">
+                  Grilled chicken skewers.
+                </p>
+                <p className="price">
+                  $13
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Hot Dog.png" className="glightbox"><img src="/img/menu/appetizers/Hot Dog.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Hot Dog</h4>
+                <p className="ingredients">
+                  Korean-style deep-fried hot dog.
+                </p>
+                <p className="price">
+                  $7
+                </p>
+              </div>
+              <div className="col-lg-3 menu-item">
+                <a href="/img/menu/appetizers/Rice Cake Skewers.png" className="glightbox"><img src="/img/menu/appetizers/Rice Cake Skewers.png" className="menu-img img-fluid" alt=""/></a>
+                <h4>Rice Cake Skewers</h4>
+                <p className="ingredients">
+                  Grilled Korean rice cake skewers with sauce.
+                </p>
+                <p className="price">
+                  $9
                 </p>
               </div>
             </div>

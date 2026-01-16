@@ -48,9 +48,9 @@ export default function Home() {
       <main className="main">
         <HeroSection />
         <AboutSection />
-        <StatsSection />
+        {/* <StatsSection /> */}
         <MenuSection />
-        <EventsSection />
+        {/* <EventsSection /> */}
         <GallerySection />
         <ContactSection />
       </main>
@@ -73,7 +73,7 @@ export default function Home() {
                 <h4>Contact</h4>
                 <p>
                   <strong>Phone:</strong> <span>+64 9 441 7080</span><br />
-                  <strong>Email:</strong> <span>info@example.com</span><br />
+                  <strong>Email:</strong> <span>jungdam534@gmail.com</span><br />
                 </p>
               </div>
             </div>

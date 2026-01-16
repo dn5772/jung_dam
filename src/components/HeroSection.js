@@ -12,7 +12,7 @@ export default function HeroSection() {
             </div>
           </div>
           <div className="col-lg-5 order-1 order-lg-2 hero-img" data-aos="zoom-out">
-            <img src="/img/hero-img.png" className="img-fluid animated" alt="" />
+            <img src="/img/hero.jpeg" className="img-fluid animated" alt="" />
           </div>
         </div>
       </div>

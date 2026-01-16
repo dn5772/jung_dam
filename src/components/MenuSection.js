@@ -723,6 +723,7 @@ export default function MenuSection() {
           </div>
         </div>
       </div>
+      <a href="#menu" className="scroll-top-menu d-flex align-items-center justify-content-center">MENU</a>
     </section>
   );
 }

@@ -78,9 +78,38 @@ export default function YummyScripts() {
             behavior: 'smooth'
           });
         });
-
         window.addEventListener('load', toggleScrollTop);
         document.addEventListener('scroll', toggleScrollTop);
+      }
+
+      // Scroll to menu top button
+      const scrollTopMenu = document.querySelector('.scroll-top-menu');
+      if (scrollTopMenu) {
+        const menuSection = document.querySelector('#menu');
+        const toggleScrollTopMenu = () => {
+          if (scrollTopMenu && menuSection) {
+            const menuTop = menuSection.offsetTop;
+            const menuHeight = menuSection.offsetHeight;
+            const scrollPos = window.scrollY;
+            if (scrollPos > menuTop + 200 && scrollPos < menuTop + menuHeight) {
+              scrollTopMenu.classList.add('active');
+            } else {
+              scrollTopMenu.classList.remove('active');
+            }
+          }
+        };
+        scrollTopMenu.addEventListener('click', (e) => {
+          e.preventDefault();
+          const menuSection = document.querySelector('#menu');
+          if (menuSection) {
+            window.scrollTo({
+              top: menuSection.offsetTop,
+              behavior: 'smooth'
+            });
+          }
+        });
+        window.addEventListener('load', toggleScrollTopMenu);
+        document.addEventListener('scroll', toggleScrollTopMenu);
       }
 
       // Animation on scroll function and init

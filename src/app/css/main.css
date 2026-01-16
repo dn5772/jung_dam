@@ -691,6 +691,44 @@ h6 {
   bottom: 15px;
 }
 
+/* Scroll to Menu Top Button */
+.scroll-top-menu {
+  position: fixed;
+  visibility: hidden;
+  opacity: 0;
+  right: 75px;
+  bottom: 15px;
+  z-index: 99998;
+  background-color: var(--accent-color);
+  width: 60px;
+  height: 44px;
+  border-radius: 22px;
+  transition: all 0.4s;
+}
+
+.scroll-top-menu i {
+  font-size: 24px;
+  color: var(--contrast-color);
+  line-height: 0;
+}
+
+.scroll-top-menu {
+  font-size: 24px;
+  color: var(--contrast-color);
+  font-family: var(--heading-font);
+  font-weight: 700;
+}
+
+.scroll-top-menu:hover {
+  background-color: color-mix(in srgb, var(--accent-color), transparent 20%);
+  color: var(--contrast-color);
+}
+
+.scroll-top-menu.active {
+  visibility: visible;
+  opacity: 1;
+}
+
 /*--------------------------------------------------------------
 # Disable aos animation delay on mobile devices
 --------------------------------------------------------------*/

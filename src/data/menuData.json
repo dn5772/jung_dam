@@ -1,0 +1,426 @@
+{
+  "categories": [
+    {
+      "id": "menu-Dak-galbi",
+      "name": "Dak-galbi",
+      "description": "Korean stir-fried chicken cooked with vegetables and rice cakes.",
+      "items": [
+        {
+          "image": "/img/menu/Dak-galbi/Original Dak-galbi.png",
+          "title": "Original Dak-galbi",
+          "ingredients": "Spicy stir-fried chicken with vegetables and rice cakes.",
+          "price": "M $57 (2 people) / L $72 (3 people)"
+        },
+        {
+          "image": "/img/menu/Dak-galbi/Cheese Dak-galbi.png",
+          "title": "Cheese Dak-galbi",
+          "ingredients": "Spicy chicken stir-fry topped with melted cheese.",
+          "price": "M $65 / L $79"
+        },
+        {
+          "image": "/img/menu/Dak-galbi/Salt-Grilled Dak-galbi.png",
+          "title": "Salt-Grilled Dak-galbi",
+          "ingredients": "Chicken stir-fried with sesame oil and salt marinade.",
+          "price": "M $57 / L $72"
+        },
+        {
+          "image": "/img/menu/Dak-galbi/Creamy Dak-galbi.png",
+          "title": "Creamy Dak-galbi",
+          "ingredients": "Tender chicken and vegetables in a rich gochujang Alfredo sauce.",
+          "price": "M $65 / L $79"
+        }
+      ]
+    },
+    {
+      "id": "menu-Tteokbokki",
+      "name": "Tteokbokki",
+      "description": "Chewy rice cakes simmered in a sweet and spicy Korean chili sauce.",
+      "items": [
+        {
+          "image": "/img/menu/Tteokbokki/Original Tteokbokki.png",
+          "title": "Original Tteokbokki",
+          "ingredients": "Rice cakes cooked in a sweet and spicy sauce.",
+          "price": "M $48"
+        },
+        {
+          "image": "/img/menu/Tteokbokki/Beef Brisket Tteokbokki.png",
+          "title": "Beef Brisket Tteokbokki",
+          "ingredients": "Tteokbokki topped with sliced beef brisket.",
+          "price": "M $59"
+        },
+        {
+          "image": "/img/menu/Tteokbokki/Donkatsu Tteokbokki.png",
+          "title": "Donkatsu Tteokbokki",
+          "ingredients": "Tteokbokki served with crispy pork cutlet.",
+          "price": "M $59"
+        },
+        {
+          "image": "/img/menu/Tteokbokki/Rose Tteokbokki.png",
+          "title": "Rose Tteokbokki",
+          "ingredients": "Creamy rose-style sauce with rice cakes.",
+          "price": "M $59"
+        }
+      ]
+    },
+    {
+      "id": "menu-main-dishes",
+      "name": "Main dishes",
+      "description": "Hearty Korean dishes perfect for sharing.",
+      "items": [
+        {
+          "image": "/img/menu/Main-dishes/Army Stew.png",
+          "title": "Army Stew (Budae Jjigae)",
+          "ingredients": "Spicy stew with spam, sausage, cheese, and ramen noodles.",
+          "price": "M $65 / L $73"
+        },
+        {
+          "image": "/img/menu/Main-dishes/Seafood Soft Tofu Hotpot.png",
+          "title": "Seafood Soft Tofu Hotpot",
+          "ingredients": "Hotpot with seafood, soft tofu, and vegetables.",
+          "price": "M $68"
+        },
+        {
+          "image": "/img/menu/Main-dishes/Soy Braised Chicken.png",
+          "title": "Soy Braised Chicken (Jjimdak)",
+          "ingredients": "Chicken braised in a savory soy-based sauce.",
+          "price": "M $72 / L $84"
+        },
+        {
+          "image": "/img/menu/Main-dishes/Spicy Braised Chicken.png",
+          "title": "Spicy Braised Chicken",
+          "ingredients": "Chicken braised in a spicy sauce with vegetables.",
+          "price": "M $70 / L $82"
+        },
+        {
+          "image": "/img/menu/Main-dishes/Fish Cake Hotpot.png",
+          "title": "Fish Cake Hotpot",
+          "ingredients": "Fish cake hotpot with seafood in a deep broth.",
+          "price": "M $68"
+        },
+        {
+          "image": "/img/menu/Main-dishes/Spicy Pork Bone Stew.png",
+          "title": "Spicy Pork Bone Stew",
+          "ingredients": "Spicy pork bone stew with vegetables.",
+          "price": "M $62"
+        }
+      ]
+    },
+    {
+      "id": "menu-stir-fried",
+      "name": "Stir-Fried",
+      "description": "Korean stir-fried dishes, sweet, savory, or spicy.",
+      "items": [
+        {
+          "image": "/img/menu/Stir-Fried/Stir-Fried Pork.png",
+          "title": "Stir-Fried Pork",
+          "ingredients": "Stir-fried pork and vegetables marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Stir-Fried Chicken.png",
+          "title": "Stir-Fried Chicken",
+          "ingredients": "Stir-fried chicken and vegetables marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Stir-Fried Squid.png",
+          "title": "Stir-Fried Squid",
+          "ingredients": "Stir-fried squid and vegetables marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Squid&Pork Belly stir-Fry.png",
+          "title": "Squid & Pork Belly Stir-Fry",
+          "ingredients": "Stir-fried squid, pork belly, and vegetables in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Bulgogi.png",
+          "title": "Bulgogi",
+          "ingredients": "Stir-fried beef and vegetables marinated in a sweet soy-based sauce.",
+          "price": "$28"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Japchae.png",
+          "title": "Japchae",
+          "ingredients": "Stir-fried glass noodles with vegetables.",
+          "price": "$24"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Galbi-Style Pork Belly.png",
+          "title": "Galbi-Style Pork Belly",
+          "ingredients": "Pork belly cooked in a traditional soy-based sauce with garlic and fruit.",
+          "price": "$28"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Semi-Dried Pollock Stir-Fry.png",
+          "title": "Semi-Dried Pollock Stir-Fry",
+          "ingredients": "Naturally semi-dried pollock with a tender, chewy texture.",
+          "price": "$30"
+        },
+        {
+          "image": "/img/menu/Stir-Fried/Grilled Fish.png",
+          "title": "Grilled Fish",
+          "ingredients": "Grilled mackerel served with green onion oil.",
+          "price": "$30"
+        }
+      ]
+    },
+    {
+      "id": "menu-soup-stew",
+      "name": "Soup & Stew",
+      "description": "Warm and comforting Korean soups and stews.",
+      "items": [
+        {
+          "image": "/img/menu/Soup-Stew/Lamb Nutrition Soup.png",
+          "title": "Lamb Nutrition Soup",
+          "ingredients": "Rich lamb broth soup made with tender lamb.",
+          "price": "$26"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Fish Roe Soup.png",
+          "title": "Fish Roe Soup (Altang)",
+          "ingredients": "Spicy or non-spicy soup with fish roe.",
+          "price": "$26"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Beef Soft Tofu Stew.png",
+          "title": "Beef Soft Tofu Stew",
+          "ingredients": "Spicy soft tofu stew with sliced beef.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Kimchi Stew.png",
+          "title": "Kimchi Stew",
+          "ingredients": "Kimchi stew with pork and tofu.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Hot Pot Bulgogi.png",
+          "title": "Hot Pot Bulgogi",
+          "ingredients": "Bulgogi served in a hot pot with vegetables and glass noodles.",
+          "price": "$26"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Pork Bone Soup.png",
+          "title": "Pork Bone Soup",
+          "ingredients": "Hearty soup made with pork backbone and potatoes.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Clear Chicken Soup.png",
+          "title": "Clear Chicken Soup",
+          "ingredients": "Mild and comforting Korean chicken soup.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Seafood Soft Tofu Stew.png",
+          "title": "Seafood Soft Tofu Stew",
+          "ingredients": "Spicy soft tofu stew with seafood.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Spicy Beef Soup.png",
+          "title": "Spicy Beef Soup (Yukgaejang)",
+          "ingredients": "Spicy soup with beef, brisket, and glass noodles.",
+          "price": "$26"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Seafood Noodle Soup.png",
+          "title": "Seafood Noodle Soup",
+          "ingredients": "Noodle soup with seafood and vegetables.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Cold Noodles.png",
+          "title": "Cold Noodles",
+          "ingredients": "Chilled noodle soup served with kimchi.",
+          "price": "$22"
+        },
+        {
+          "image": "/img/menu/Soup-Stew/Spicy Cold Noodles.png",
+          "title": "Spicy Cold Noodles",
+          "ingredients": "House special cold noodles with a spicy kick.",
+          "price": "$22"
+        },
+        {
+          "image": "/menu/1769559906728_Army Stew.png",
+          "title": "해물라면",
+          "ingredients": "해물라면임",
+          "price": "25"
+        }
+      ]
+    },
+    {
+      "id": "menu-stone-pot",
+      "name": "Stone Pot",
+      "description": "Served sizzling hot in a traditional stone bowl.",
+      "items": [
+        {
+          "image": "/img/menu/Stone-Pot/Bibimbap.png",
+          "title": "Bibimbap",
+          "ingredients": "Rice topped with assorted vegetables and beef mince, mixed with gochujang.",
+          "price": "$24"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Fish Roe Rice.png",
+          "title": "Fish Roe Rice (Albap)",
+          "ingredients": "Rice topped with fish roe, kimchi, pickled radish, and crab meat.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Stone Pot Bibimbap.png",
+          "title": "Stone Pot Bibimbap",
+          "ingredients": "Sizzling rice with assorted vegetables and beef mince, mixed with gochujang.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Stone Pot Beef Rice Bowl.png",
+          "title": "Stone Pot Beef Rice Bowl",
+          "ingredients": "Rice topped with stir-fried beef marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Stone Pot Chicken Rice Bowl.png",
+          "title": "Stone Pot Chicken Rice Bowl",
+          "ingredients": "Rice topped with stir-fried chicken marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Stone Pot Squid Rice Bowl.png",
+          "title": "Stone Pot Squid Rice Bowl",
+          "ingredients": "Rice topped with stir-fried squid marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Stone Pot Pork Rice Bowl.png",
+          "title": "Stone Pot Pork Rice Bowl",
+          "ingredients": "Rice topped with stir-fried pork marinated in a soy or spicy sauce.",
+          "price": "$25"
+        },
+        {
+          "image": "/img/menu/Stone-Pot/Kimchi Fried Rice.png",
+          "title": "Kimchi Fried Rice",
+          "ingredients": "Fried rice with kimchi, topped with a sunny-side-up egg and seaweed. (Add bacon $5 / sausage $5 / cheese $7)",
+          "price": "$24"
+        }
+      ]
+    },
+    {
+      "id": "menu-fried",
+      "name": "Fried",
+      "description": "Korean-style fried dishes.",
+      "items": [
+        {
+          "image": "/img/menu/Fried/Fried Chicken.png",
+          "title": "Fried Chicken",
+          "ingredients": "Classic Korean-style crispy fried chicken. (+$1 extra crispy)",
+          "price": "$28"
+        },
+        {
+          "image": "/img/menu/Fried/Seasoned Chicken.png",
+          "title": "Seasoned Chicken",
+          "ingredients": "Fried chicken coated in sweet and spicy sauce.",
+          "price": "$29"
+        },
+        {
+          "image": "/img/menu/Fried/Green Onion Chicken.png",
+          "title": "Green Onion Chicken",
+          "ingredients": "Fried chicken topped with fresh green onions.",
+          "price": "$29"
+        },
+        {
+          "image": "/img/menu/Fried/Garlic Soy Chicken.png",
+          "title": "Garlic Soy Chicken",
+          "ingredients": "Fried chicken glazed in garlic soy sauce.",
+          "price": "$29"
+        },
+        {
+          "image": "/img/menu/Fried/Honey Butter Chicken.png",
+          "title": "Honey Butter Chicken",
+          "ingredients": "Fried chicken coated in honey butter sauce.",
+          "price": "$30"
+        },
+        {
+          "image": "/img/menu/Fried/Donkatsu.png",
+          "title": "Donkatsu",
+          "ingredients": "Breaded and deep-fried pork cutlet.",
+          "price": "$24"
+        },
+        {
+          "image": "/img/menu/Fried/King Size Donkatsu.png",
+          "title": "King Size Donkatsu",
+          "ingredients": "Extra-large breaded pork cutlet.",
+          "price": "$39"
+        },
+        {
+          "image": "/img/menu/Fried/Seafood Pancake.png",
+          "title": "Seafood Pancake",
+          "ingredients": "Korean-style pancake with seafood and vegetables.",
+          "price": "$28"
+        },
+        {
+          "image": "/img/menu/Fried/Kimchi Pancake.png",
+          "title": "Kimchi Pancake",
+          "ingredients": "Korean-style pancake made with kimchi.",
+          "price": "$28"
+        }
+      ]
+    },
+    {
+      "id": "menu-appetizers",
+      "name": "Appetizers",
+      "description": "Delicious starters to begin your meal.",
+      "items": [
+        {
+          "image": "/img/menu/Appetizers/Gyoza.png",
+          "title": "Gyoza",
+          "ingredients": "Pan-fried dumplings.",
+          "price": "$9"
+        },
+        {
+          "image": "/img/menu/Appetizers/Seaweed Roll.png",
+          "title": "Seaweed Roll",
+          "ingredients": "Deep-fried seaweed rolls.",
+          "price": "$9"
+        },
+        {
+          "image": "/img/menu/Appetizers/Fried Shrimp.png",
+          "title": "Fried Shrimp",
+          "ingredients": "Crispy deep-fried shrimp.",
+          "price": "$13"
+        },
+        {
+          "image": "/img/menu/Appetizers/Steamed Egg.png",
+          "title": "Steamed Egg",
+          "ingredients": "Soft and fluffy Korean-style steamed egg.",
+          "price": "$13"
+        },
+        {
+          "image": "/img/menu/Appetizers/Fish Roe Rice Balls.png",
+          "title": "Fish Roe Rice Balls",
+          "ingredients": "Rice balls mixed with fish roe and pickled radish.",
+          "price": "$13"
+        },
+        {
+          "image": "/img/menu/Appetizers/Chicken Skewers.png",
+          "title": "Chicken Skewers",
+          "ingredients": "Grilled chicken skewers.",
+          "price": "$13"
+        },
+        {
+          "image": "/img/menu/Appetizers/Hot Dog.png",
+          "title": "Hot Dog",
+          "ingredients": "Korean-style deep-fried hot dog.",
+          "price": "$7"
+        },
+        {
+          "image": "/img/menu/Appetizers/Rice Cake Skewers.png",
+          "title": "Rice Cake Skewers",
+          "ingredients": "Grilled Korean rice cake skewers with sauce.",
+          "price": "$9"
+        }
+      ]
+    }
+  ]
+}

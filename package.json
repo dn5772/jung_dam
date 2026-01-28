@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint",
+    "migrate": "node scripts/migrate-to-blob.js",
+    "check-blob": "node scripts/check-blob-status.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

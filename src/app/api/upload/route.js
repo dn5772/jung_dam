@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { put } from '@vercel/blob';
+
+const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 
 export async function POST(request) {
   try {
@@ -16,32 +17,24 @@ export async function POST(request) {
       return NextResponse.json({ error: '이미지 파일만 업로드 가능합니다' }, { status: 400 });
     }
 
-    // 파일 크기 제한 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: '파일 크기는 5MB 이하여야 합니다' }, { status: 400 });
+    // 파일 크기 제한 (4.5MB)
+    if (file.size > 4.5 * 1024 * 1024) {
+      return NextResponse.json({ error: '파일 크기는 4.5MB 이하여야 합니다' }, { status: 400 });
     }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
 
     // 파일명 생성 (타임스탬프 + 원본 파일명)
     const timestamp = Date.now();
-    const filename = `${timestamp}_${file.name}`;
-    const uploadDir = join(process.cwd(), 'public', 'img', 'menu');
+    const filename = `menu/${timestamp}_${file.name}`;
 
-    // img/menu 폴더가 없으면 생성
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (error) {
-      // 폴더가 이미 존재하는 경우 무시
-    }
+    // Vercel Blob에 파일 업로드
+    const blob = await put(filename, file, {
+      token: BLOB_TOKEN,
+      access: 'public',
+      contentType: file.type,
+    });
 
-    // 파일 저장
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // 웹에서 접근 가능한 경로 반환
-    const imageUrl = `/img/menu/${filename}`;
+    // Blob URL 반환
+    const imageUrl = blob.url;
 
     return NextResponse.json({ imageUrl });
   } catch (error) {

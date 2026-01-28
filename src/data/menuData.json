@@ -232,7 +232,7 @@
           "price": "$25"
         },
         {
-          "image": "/img/menu/Soup-Stew/Cold Noodles.png",
+          "image": "/img/menu/1769561137679_Cold noodles.png",
           "title": "Cold Noodles",
           "ingredients": "Chilled noodle soup served with kimchi.",
           "price": "$22"
@@ -242,12 +242,6 @@
           "title": "Spicy Cold Noodles",
           "ingredients": "House special cold noodles with a spicy kick.",
           "price": "$22"
-        },
-        {
-          "image": "/menu/1769559906728_Army Stew.png",
-          "title": "해물라면",
-          "ingredients": "해물라면임",
-          "price": "25"
         }
       ]
     },

@@ -23,13 +23,13 @@ const verifyToken = (request) => {
 
 export async function GET(request) {
   // JWT 검증
-  const user = verifyToken(request);
-  if (!user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+//   const user = verifyToken(request);
+//   if (!user) {
+//     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+//       status: 401,
+//       headers: { 'Content-Type': 'application/json' },
+//     });
+//   }
 
   try {
     const data = fs.readFileSync(filePath, 'utf8');
@@ -106,7 +106,7 @@ export async function PATCH(request) {
         const itemToDelete = currentData.categories[categoryIndex].items[itemIndex];
 
         // 이미지 파일이 있으면 삭제
-        if (itemToDelete.image && itemToDelete.image.startsWith('/menu/')) {
+        if (itemToDelete.image && itemToDelete.image.startsWith('/img/menu/')) {
           try {
             const imagePath = path.join(process.cwd(), 'public', itemToDelete.image);
             if (fs.existsSync(imagePath)) {

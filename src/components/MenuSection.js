@@ -1,6 +1,11 @@
-import menuData from '../data/menuData.json';
+import fs from 'fs';
+import path from 'path';
 
-export default function MenuSection() {
+export default async function MenuSection() {
+  // SSR을 위해 직접 JSON 파일 읽기
+  const filePath = path.join(process.cwd(), 'src/data/menuData.json');
+  const fileContents = fs.readFileSync(filePath, 'utf8');
+  const menuData = JSON.parse(fileContents);
   return (
     <section id="menu" className="menu section">
       <div className="container section-title" data-aos="fade-up">
@@ -27,9 +32,26 @@ export default function MenuSection() {
               <div className="row gy-5">
                 {category.items.map((item, itemIndex) => (
                   <div key={itemIndex} className={`col-lg-4 menu-item`}>
-                    <a href={item.image} className="glightbox">
-                      <img src={item.image} className="menu-img img-fluid" alt="" />
-                    </a>
+                    {item.image ? (
+                      <a href={item.image} className="glightbox">
+                        <img src={item.image} className="menu-img img-fluid" alt={item.title} />
+                      </a>
+                    ) : (
+                      <div className="menu-img-placeholder" style={{
+                        width: '100%',
+                        height: '200px',
+                        backgroundColor: '#f8f9fa',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        color: '#6c757d',
+                        fontSize: '14px'
+                      }}>
+                        <span>이미지 준비중</span>
+                      </div>
+                    )}
                     <h4>{item.title}</h4>
                     <p className="ingredients">{item.ingredients}</p>
                     <p className="price">{item.price}</p>

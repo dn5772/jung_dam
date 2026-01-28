@@ -27,9 +27,9 @@ export async function POST(request) {
     // 파일명 생성 (타임스탬프 + 원본 파일명)
     const timestamp = Date.now();
     const filename = `${timestamp}_${file.name}`;
-    const uploadDir = join(process.cwd(), 'public', 'menu');
+    const uploadDir = join(process.cwd(), 'public', 'img', 'menu');
 
-    // menu 폴더가 없으면 생성
+    // img/menu 폴더가 없으면 생성
     try {
       await mkdir(uploadDir, { recursive: true });
     } catch (error) {
@@ -41,7 +41,7 @@ export async function POST(request) {
     await writeFile(filepath, buffer);
 
     // 웹에서 접근 가능한 경로 반환
-    const imageUrl = `/menu/${filename}`;
+    const imageUrl = `/img/menu/${filename}`;
 
     return NextResponse.json({ imageUrl });
   } catch (error) {

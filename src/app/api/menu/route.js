@@ -5,6 +5,36 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const filePath = path.join(process.cwd(), 'src/data/menuData.json');
 
+// 메모리에 메뉴 데이터 저장 (Vercel 호환성 위해)
+let menuData = null;
+
+// 메뉴 데이터 초기 로드 함수
+const loadMenuData = () => {
+  if (menuData === null) {
+    try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      menuData = JSON.parse(data);
+    } catch (error) {
+      console.error('Failed to load menu data:', error);
+      menuData = { categories: [] };
+    }
+  }
+  return menuData;
+};
+
+// 메뉴 데이터 저장 함수
+const saveMenuData = (data) => {
+  menuData = data;
+  // 로컬 개발 환경에서는 파일에도 저장
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error('Failed to save menu data to file:', error);
+    }
+  }
+};
+
 // JWT 토큰 검증 함수
 const verifyToken = (request) => {
   try {
@@ -32,8 +62,8 @@ export async function GET(request) {
 //   }
 
   try {
-    const data = fs.readFileSync(filePath, 'utf8');
-    return new Response(data, {
+    const data = loadMenuData();
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -57,7 +87,7 @@ export async function POST(request) {
 
   try {
     const newData = await request.json();
-    fs.writeFileSync(filePath, JSON.stringify(newData, null, 2));
+    saveMenuData(newData);
     return new Response(JSON.stringify({ message: 'Menu data updated successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -82,7 +112,7 @@ export async function PATCH(request) {
 
   try {
     const { action, categoryId, itemIndex, data } = await request.json();
-    const currentData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const currentData = loadMenuData();
 
     if (action === 'add') {
       // 새 아이템 추가
@@ -105,8 +135,8 @@ export async function PATCH(request) {
       if (categoryIndex >= 0 && itemIndex >= 0) {
         const itemToDelete = currentData.categories[categoryIndex].items[itemIndex];
 
-        // 이미지 파일이 있으면 삭제
-        if (itemToDelete.image && itemToDelete.image.startsWith('/img/menu/')) {
+        // 이미지 파일이 있으면 삭제 (로컬 환경에서만)
+        if (itemToDelete.image && itemToDelete.image.startsWith('/img/menu/') && process.env.NODE_ENV !== 'production') {
           try {
             const imagePath = path.join(process.cwd(), 'public', itemToDelete.image);
             if (fs.existsSync(imagePath)) {
@@ -124,7 +154,7 @@ export async function PATCH(request) {
       }
     }
 
-    fs.writeFileSync(filePath, JSON.stringify(currentData, null, 2));
+    saveMenuData(currentData);
     return new Response(JSON.stringify({ message: 'Menu data updated successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

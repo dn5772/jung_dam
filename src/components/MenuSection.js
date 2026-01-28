@@ -1,11 +1,43 @@
-import fs from 'fs';
-import path from 'path';
+'use client';
 
-export default async function MenuSection() {
-  // SSR을 위해 직접 JSON 파일 읽기
-  const filePath = path.join(process.cwd(), 'src/data/menuData.json');
-  const fileContents = fs.readFileSync(filePath, 'utf8');
-  const menuData = JSON.parse(fileContents);
+import { useState, useEffect } from 'react';
+
+export default function MenuSection() {
+  const [menuData, setMenuData] = useState({ categories: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        const response = await fetch('/api/menu');
+        if (response.ok) {
+          const data = await response.json();
+          setMenuData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch menu data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuData();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="menu" className="menu section">
+        <div className="container section-title" data-aos="fade-up">
+          <h2>Our Menu</h2>
+          <p><span>Check Our</span> <span className="description-title">Menu</span></p>
+        </div>
+        <div className="container text-center">
+          <p>Loading menu...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="menu" className="menu section">
       <div className="container section-title" data-aos="fade-up">

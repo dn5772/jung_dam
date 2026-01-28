@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 export default function MenuSection() {
   const [menuData, setMenuData] = useState({ categories: [] });
   const [loading, setLoading] = useState(true);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -13,9 +14,14 @@ export default function MenuSection() {
         if (response.ok) {
           const data = await response.json();
           setMenuData(data);
+        } else {
+          console.error('Failed to fetch menu data:', response.status, response.statusText);
+          // 사용자에게 에러 표시 (선택사항)
+          setMenuData({ categories: [] }); // 빈 데이터로 폴백
         }
       } catch (error) {
-        console.error('Failed to fetch menu data:', error);
+        console.error('Network error while fetching menu data:', error);
+        setMenuData({ categories: [] }); // 빈 데이터로 폴백
       } finally {
         setLoading(false);
       }
@@ -23,6 +29,74 @@ export default function MenuSection() {
 
     fetchMenuData();
   }, []);
+
+  useEffect(() => {
+    // GLightbox 초기화
+    const initGLightbox = async () => {
+      try {
+        const GLightbox = (await import('glightbox')).default;
+        const lightbox = GLightbox({
+          selector: '.glightbox',
+          touchNavigation: true,
+          loop: true,
+          autoplayVideos: true
+        });
+        
+        // 클린업 함수 반환
+        return () => {
+          if (lightbox && typeof lightbox.destroy === 'function') {
+            lightbox.destroy();
+          }
+        };
+      } catch (error) {
+        console.error('Failed to initialize GLightbox:', error);
+      }
+    };
+
+    // 메뉴 데이터가 로드된 후에만 GLightbox 초기화
+    if (!loading && menuData.categories.length > 0) {
+      // DOM이 완전히 렌더링된 후에 GLightbox 초기화
+      setTimeout(() => {
+        initGLightbox();
+      }, 100);
+    }
+
+    const handleScroll = () => {
+      // 메뉴 섹션이 화면에 보일 때 버튼 표시
+      const menuSection = document.getElementById('menu');
+      if (menuSection) {
+        const rect = menuSection.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        setShowScrollTop(isVisible);
+      }
+    };
+
+    const handleScrollTopClick = (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    };
+
+    // 스크롤 이벤트 리스너 추가
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // 초기 상태 설정
+
+    // 버튼 클릭 이벤트 리스너 추가
+    const scrollButton = document.querySelector('.scroll-top-menu');
+    if (scrollButton) {
+      scrollButton.addEventListener('click', handleScrollTopClick);
+    }
+
+    // 클린업
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollButton) {
+        scrollButton.removeEventListener('click', handleScrollTopClick);
+      }
+    };
+  }, [loading, menuData]); // loading과 menuData가 변경될 때마다 재실행
 
   if (loading) {
     return (
@@ -65,8 +139,8 @@ export default function MenuSection() {
                 {category.items.map((item, itemIndex) => (
                   <div key={itemIndex} className={`col-lg-4 menu-item`}>
                     {item.image ? (
-                      <a href={item.image} className="glightbox">
-                        <img src={item.image} className="menu-img img-fluid" alt={item.title} />
+                      <a href={item.image} className={`glightbox`}>
+                        <img src={item.image} className={`menu-img img-fluid`} alt={item.title} loading="lazy" />
                       </a>
                     ) : (
                       <div className="menu-img-placeholder" style={{
@@ -94,7 +168,7 @@ export default function MenuSection() {
           ))}
         </div>
       </div>
-      <a href="#menu" className="scroll-top-menu d-flex align-items-center justify-content-center">MENU</a>
+      <a href="#menu" className={`scroll-top-menu d-flex align-items-center justify-content-center ${showScrollTop ? 'active' : ''}`}>MENU</a>
     </section>
   );
 }

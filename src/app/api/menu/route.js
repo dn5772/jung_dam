@@ -5,6 +5,11 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 const MENU_DATA_KEY = 'menuData-en.json'; // 영어 버전 메뉴 데이터
 
+// 환경 변수 검증
+if (!JWT_SECRET || !BLOB_TOKEN) {
+  throw new Error('Missing required environment variables: JWT_SECRET or BLOB_READ_WRITE_TOKEN');
+}
+
 // 메뉴 데이터 초기 로드 함수 (Vercel Blob에서)
 const loadMenuData = async () => {
   try {

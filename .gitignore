@@ -44,3 +44,5 @@ next-env.d.ts
 
 # uploads
 src/components/MenuSection.js.backup
+check-blob-status.js
+migrate-to-blob.js

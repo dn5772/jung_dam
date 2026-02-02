@@ -189,6 +189,21 @@ export default function AdminPage() {
   };
 
   const addItemToServer = async (itemData) => {
+    // 낙관적 업데이트: 먼저 로컬 상태 업데이트
+    const newItem = {
+      image: itemData.image,
+      title: itemData.title,
+      ingredients: itemData.ingredients,
+      price: itemData.price,
+    };
+
+    const updatedMenuData = { ...menuData };
+    const categoryIndex = updatedMenuData.categories.findIndex(cat => cat.id === itemData.category);
+    if (categoryIndex >= 0) {
+      updatedMenuData.categories[categoryIndex].items.push(newItem);
+      setMenuData(updatedMenuData);
+    }
+
     try {
       const response = await fetch('/api/menu', {
         method: 'PATCH',
@@ -196,30 +211,46 @@ export default function AdminPage() {
         body: JSON.stringify({
           action: 'add',
           categoryId: itemData.category,
-          data: {
-            image: itemData.image,
-            title: itemData.title,
-            ingredients: itemData.ingredients,
-            price: itemData.price,
-          },
+          data: newItem,
         }),
       });
+
       if (response.ok) {
-        // 성공 시 로컬 데이터 리프레시
+        // 성공 시 서버에서 최신 데이터 가져와서 동기화
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
         setMenuData(data);
         alert('항목이 성공적으로 추가되었습니다!');
       } else {
+        // 실패 시 로컬 상태 롤백
+        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
+        const data = await res.json();
+        setMenuData(data);
         alert('항목 추가에 실패했습니다.');
       }
     } catch (error) {
+      // 에러 시 로컬 상태 롤백
+      const res = await fetch('/api/menu', { headers: getAuthHeaders() });
+      const data = await res.json();
+      setMenuData(data);
       alert('항목 추가에 실패했습니다.');
     }
   };
 
   const updateItemOnServer = async (categoryId, itemIndex, itemData) => {
+    // 낙관적 업데이트: 먼저 로컬 상태 업데이트
+    const updatedMenuData = { ...menuData };
+    const categoryIndex = updatedMenuData.categories.findIndex(cat => cat.id === categoryId);
+    if (categoryIndex >= 0 && itemIndex >= 0) {
+      updatedMenuData.categories[categoryIndex].items[itemIndex] = {
+        ...updatedMenuData.categories[categoryIndex].items[itemIndex],
+        ...itemData
+      };
+      setMenuData(updatedMenuData);
+    }
+
     try {
+      console.log('Sending PATCH request:', { action: 'update', categoryId, itemIndex, data: itemData });
       const response = await fetch('/api/menu', {
         method: 'PATCH',
         headers: getAuthHeaders(),
@@ -230,21 +261,39 @@ export default function AdminPage() {
           data: itemData,
         }),
       });
+      console.log('PATCH response status:', response.status);
       if (response.ok) {
-        // 성공 시 로컬 데이터 리프레시
+        // 성공 시 서버에서 최신 데이터 가져와서 동기화
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
+        console.log('Refreshed menu data:', data);
         setMenuData(data);
         alert('항목이 성공적으로 수정되었습니다!');
       } else {
+        // 실패 시 로컬 상태 롤백
+        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
+        const data = await res.json();
+        setMenuData(data);
         alert('항목 수정에 실패했습니다.');
       }
     } catch (error) {
+      // 에러 시 로컬 상태 롤백
+      const res = await fetch('/api/menu', { headers: getAuthHeaders() });
+      const data = await res.json();
+      setMenuData(data);
       alert('항목 수정에 실패했습니다.');
     }
   };
 
   const deleteItemFromServer = async (categoryId, itemIndex) => {
+    // 낙관적 업데이트: 먼저 로컬 상태 업데이트
+    const updatedMenuData = { ...menuData };
+    const categoryIndex = updatedMenuData.categories.findIndex(cat => cat.id === categoryId);
+    if (categoryIndex >= 0 && itemIndex >= 0) {
+      updatedMenuData.categories[categoryIndex].items.splice(itemIndex, 1);
+      setMenuData(updatedMenuData);
+    }
+
     try {
       const response = await fetch('/api/menu', {
         method: 'PATCH',
@@ -256,15 +305,23 @@ export default function AdminPage() {
         }),
       });
       if (response.ok) {
-        // 성공 시 로컬 데이터 리프레시
+        // 성공 시 서버에서 최신 데이터 가져와서 동기화
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
         setMenuData(data);
         alert('항목이 성공적으로 삭제되었습니다!');
       } else {
+        // 실패 시 로컬 상태 롤백
+        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
+        const data = await res.json();
+        setMenuData(data);
         alert('항목 삭제에 실패했습니다.');
       }
     } catch (error) {
+      // 에러 시 로컬 상태 롤백
+      const res = await fetch('/api/menu', { headers: getAuthHeaders() });
+      const data = await res.json();
+      setMenuData(data);
       alert('항목 삭제에 실패했습니다.');
     }
   };
@@ -298,19 +355,32 @@ export default function AdminPage() {
   };
 
   const saveItem = async () => {
+    console.log('saveItem called, editingItem:', editingItem);
+    if (!editingItem) {
+      console.error('editingItem is null');
+      alert('편집 중인 항목이 없습니다.');
+      return;
+    }
     if (editingItem.isNew) {
       await addItemToServer(editingItem);
     } else {
-      await updateItemOnServer(
-        menuData.categories[editingItem.catIndex].id,
-        editingItem.itemIndex,
-        {
-          image: editingItem.image,
-          title: editingItem.title,
-          ingredients: editingItem.ingredients,
-          price: editingItem.price,
-        }
-      );
+      // 저장 시점에 인덱스를 다시 계산 (안전하게)
+      const categoryId = menuData.categories[editingItem.catIndex]?.id;
+      if (!categoryId) {
+        console.error('Invalid category index:', editingItem.catIndex);
+        alert('카테고리를 찾을 수 없습니다.');
+        return;
+      }
+      
+      const itemIndex = editingItem.itemIndex;
+      const itemData = {
+        image: editingItem.image,
+        title: editingItem.title,
+        ingredients: editingItem.ingredients,
+        price: editingItem.price,
+      };
+      console.log('Updating item:', { categoryId, itemIndex, itemData });
+      await updateItemOnServer(categoryId, itemIndex, itemData);
     }
     setEditingItem(null);
     setSelectedCategory('');
@@ -335,6 +405,10 @@ export default function AdminPage() {
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (!editingItem) {
+        alert('먼저 편집할 메뉴 항목을 선택해주세요.');
+        return;
+      }
       try {
         const formData = new FormData();
         formData.append('file', file);
@@ -346,6 +420,7 @@ export default function AdminPage() {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('Image uploaded successfully:', data.imageUrl);
           setEditingItem({ ...editingItem, image: data.imageUrl });
         } else {
           const errorData = await response.json();

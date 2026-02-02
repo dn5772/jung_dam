@@ -2,10 +2,34 @@
 
 import { useState, useEffect } from 'react';
 
+const DEFAULT_LOCALE = 'ko';
+
+const getLocalizedValue = (value, locale) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    return (
+      value[locale] ||
+      value[DEFAULT_LOCALE] ||
+      Object.values(value).find((entry) => entry) ||
+      ''
+    );
+  }
+  return '';
+};
+
 export default function MenuSection() {
   const [menuData, setMenuData] = useState({ categories: [] });
   const [loading, setLoading] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentLocale, setCurrentLocale] = useState(DEFAULT_LOCALE);
+
+  useEffect(() => {
+    const browserLocale = typeof navigator !== 'undefined' && navigator.language
+      ? navigator.language.slice(0, 2)
+      : DEFAULT_LOCALE;
+    setCurrentLocale(browserLocale || DEFAULT_LOCALE);
+  }, []);
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -123,7 +147,7 @@ export default function MenuSection() {
           {menuData.categories.map((category, index) => (
             <li key={category.id} className="nav-item">
               <a className={`nav-link ${index === 0 ? 'active show' : ''}`} data-bs-toggle="tab" data-bs-target={`#${category.id}`}>
-                <h4>{category.name}</h4>
+                <h4>{getLocalizedValue(category.name, currentLocale)}</h4>
               </a>
             </li>
           ))}
@@ -132,15 +156,20 @@ export default function MenuSection() {
           {menuData.categories.map((category, index) => (
             <div key={category.id} className={`tab-pane fade ${index === 0 ? 'active show' : ''}`} id={category.id}>
               <div className="tab-header text-center">
-                <h3>{category.name}</h3>
-                <p>{category.description}</p>
+                <h3>{getLocalizedValue(category.name, currentLocale)}</h3>
+                <p>{getLocalizedValue(category.description, currentLocale)}</p>
               </div>
               <div className="row gy-5">
                 {category.items.map((item, itemIndex) => (
                   <div key={itemIndex} className={`col-lg-4 menu-item`}>
                     {item.image ? (
                       <a href={item.image} className={`glightbox`}>
-                        <img src={item.image} className={`menu-img img-fluid`} alt={item.title} loading="lazy" />
+                        <img
+                          src={item.image}
+                          className={`menu-img img-fluid`}
+                          alt={getLocalizedValue(item.title, currentLocale)}
+                          loading="lazy"
+                        />
                       </a>
                     ) : (
                       <div className="menu-img-placeholder" style={{
@@ -158,8 +187,8 @@ export default function MenuSection() {
                         <span>이미지 준비중</span>
                       </div>
                     )}
-                    <h4>{item.title}</h4>
-                    <p className="ingredients">{item.ingredients}</p>
+                    <h4>{getLocalizedValue(item.title, currentLocale)}</h4>
+                    <p className="ingredients">{getLocalizedValue(item.ingredients, currentLocale)}</p>
                     <p className="price">{item.price}</p>
                   </div>
                 ))}

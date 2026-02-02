@@ -1,7 +1,54 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
+
+const DEFAULT_LOCALE = 'ko';
+const SUPPORTED_LOCALES = [
+  { id: 'ko', label: '한국어' },
+  { id: 'en', label: 'English' },
+];
+
+const normalizeLocalizedField = (value) => {
+  if (!value) return { [DEFAULT_LOCALE]: '' };
+  if (typeof value === 'string') return { [DEFAULT_LOCALE]: value };
+  if (typeof value === 'object') return value;
+  return { [DEFAULT_LOCALE]: '' };
+};
+
+const normalizeMenuData = (data) => {
+  if (!data || !Array.isArray(data.categories)) {
+    return { categories: [] };
+  }
+
+  return {
+    ...data,
+    categories: data.categories.map((category) => ({
+      ...category,
+      items: Array.isArray(category.items)
+        ? category.items.map((item) => ({
+            ...item,
+            title: normalizeLocalizedField(item.title),
+            ingredients: normalizeLocalizedField(item.ingredients),
+          }))
+        : [],
+    })),
+  };
+};
+
+const getLocalizedValue = (value, locale) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    return (
+      value[locale] ||
+      value[DEFAULT_LOCALE] ||
+      Object.values(value).find((entry) => entry) ||
+      ''
+    );
+  }
+  return '';
+};
 
 // 간단한 인증 상태 관리
 const useAuth = () => {
@@ -113,18 +160,59 @@ export default function AdminPage() {
   const { isLoggedIn, isLoading, login, logout, token } = useAuth();
 
   // 모든 훅을 최상위 레벨에서 호출 (로그인 상태와 관계없이)
-  const [menuData, setMenuData] = useState(null);
+  const [menuData, setMenuData] = useState({ categories: [] });
   const [dataLoading, setDataLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedItem, setSelectedItem] = useState('');
   const [editingItem, setEditingItem] = useState(null);
+  const [activeLocale, setActiveLocale] = useState(DEFAULT_LOCALE);
+  const [status, setStatus] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [itemSearch, setItemSearch] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+  const statusTimeoutRef = useRef(null);
 
   // API 요청을 위한 헤더 생성 함수
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   });
+
+  const showStatus = (type, message) => {
+    setStatus({ type, message });
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+    }
+    statusTimeoutRef.current = setTimeout(() => {
+      setStatus(null);
+    }, 4000);
+  };
+
+  const confirmDiscardChanges = () => {
+    if (!hasUnsavedChanges) return true;
+    return confirm('변경사항이 저장되지 않았습니다. 이동하면 변경사항이 사라집니다. 계속할까요?');
+  };
+
+  const updateEditingField = (field, value) => {
+    setEditingItem((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  const updateEditingLocalizedField = (field, locale, value) => {
+    setEditingItem((prev) => ({
+      ...prev,
+      [field]: {
+        ...normalizeLocalizedField(prev?.[field]),
+        [locale]: value,
+      },
+    }));
+    setHasUnsavedChanges(true);
+  };
 
   useEffect(() => {
     // 로그인된 경우에만 메뉴 데이터 로딩
@@ -134,17 +222,24 @@ export default function AdminPage() {
       })
         .then((res) => res.json())
         .then((data) => {
-          setMenuData(data);
+          setMenuData(normalizeMenuData(data));
           setDataLoading(false);
         })
         .catch((error) => {
           console.error('Error fetching menu data:', error);
+          showStatus('error', '메뉴 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.');
           setDataLoading(false);
         });
     } else {
       setDataLoading(false);
     }
   }, [isLoggedIn, token]);
+
+  useEffect(() => () => {
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedCategory && selectedItem !== '' && menuData) {
@@ -166,8 +261,21 @@ export default function AdminPage() {
     return <div className={styles.container}>메뉴 데이터 로딩 중...</div>;
   }
 
+  const currentCategory = menuData?.categories?.find((cat) => cat.id === selectedCategory);
+  const filteredItems = currentCategory?.items
+    ?.map((item, index) => ({ item, index }))
+    .filter(({ item }) => {
+      const query = itemSearch.trim().toLowerCase();
+      if (!query) return true;
+      const localizedTitle = getLocalizedValue(item.title, activeLocale).toLowerCase();
+      const allTitles = typeof item.title === 'object' ? Object.values(item.title).join(' ').toLowerCase() : '';
+      const price = (item.price || '').toLowerCase();
+      return `${localizedTitle} ${allTitles} ${price}`.includes(query);
+    }) || [];
+
   const handleSave = async () => {
     setSaving(true);
+    setPendingAction('saveAll');
     try {
       const response = await fetch('/api/menu', {
         method: 'POST',
@@ -175,20 +283,23 @@ export default function AdminPage() {
         body: JSON.stringify(menuData),
       });
       if (response.ok) {
-        alert('메뉴 데이터가 성공적으로 저장되었습니다!');
+        showStatus('success', '메뉴 데이터가 성공적으로 저장되었습니다.');
         setSelectedCategory('');
         setSelectedItem('');
         setEditingItem(null);
+        setHasUnsavedChanges(false);
       } else {
-        alert('메뉴 데이터 저장에 실패했습니다.');
+        showStatus('error', '메뉴 데이터 저장에 실패했습니다.');
       }
     } catch (error) {
-      alert('메뉴 데이터 저장에 실패했습니다.');
+      showStatus('error', '메뉴 데이터 저장에 실패했습니다.');
     }
     setSaving(false);
+    setPendingAction(null);
   };
 
   const addItemToServer = async (itemData) => {
+    setPendingAction('add');
     // 낙관적 업데이트: 먼저 로컬 상태 업데이트
     const newItem = {
       image: itemData.image,
@@ -219,25 +330,27 @@ export default function AdminPage() {
         // 성공 시 서버에서 최신 데이터 가져와서 동기화
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
-        setMenuData(data);
-        alert('항목이 성공적으로 추가되었습니다!');
+        setMenuData(normalizeMenuData(data));
+        showStatus('success', '항목이 성공적으로 추가되었습니다.');
       } else {
         // 실패 시 로컬 상태 롤백
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
-        setMenuData(data);
-        alert('항목 추가에 실패했습니다.');
+        setMenuData(normalizeMenuData(data));
+        showStatus('error', '항목 추가에 실패했습니다.');
       }
     } catch (error) {
       // 에러 시 로컬 상태 롤백
       const res = await fetch('/api/menu', { headers: getAuthHeaders() });
       const data = await res.json();
-      setMenuData(data);
-      alert('항목 추가에 실패했습니다.');
+      setMenuData(normalizeMenuData(data));
+      showStatus('error', '항목 추가에 실패했습니다.');
     }
+    setPendingAction(null);
   };
 
   const updateItemOnServer = async (categoryId, itemIndex, itemData) => {
+    setPendingAction('update');
     // 낙관적 업데이트: 먼저 로컬 상태 업데이트
     const updatedMenuData = { ...menuData };
     const categoryIndex = updatedMenuData.categories.findIndex(cat => cat.id === categoryId);
@@ -267,25 +380,27 @@ export default function AdminPage() {
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
         console.log('Refreshed menu data:', data);
-        setMenuData(data);
-        alert('항목이 성공적으로 수정되었습니다!');
+        setMenuData(normalizeMenuData(data));
+        showStatus('success', '항목이 성공적으로 수정되었습니다.');
       } else {
         // 실패 시 로컬 상태 롤백
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
-        setMenuData(data);
-        alert('항목 수정에 실패했습니다.');
+        setMenuData(normalizeMenuData(data));
+        showStatus('error', '항목 수정에 실패했습니다.');
       }
     } catch (error) {
       // 에러 시 로컬 상태 롤백
       const res = await fetch('/api/menu', { headers: getAuthHeaders() });
       const data = await res.json();
-      setMenuData(data);
-      alert('항목 수정에 실패했습니다.');
+      setMenuData(normalizeMenuData(data));
+      showStatus('error', '항목 수정에 실패했습니다.');
     }
+    setPendingAction(null);
   };
 
   const deleteItemFromServer = async (categoryId, itemIndex) => {
+    setPendingAction('delete');
     // 낙관적 업데이트: 먼저 로컬 상태 업데이트
     const updatedMenuData = { ...menuData };
     const categoryIndex = updatedMenuData.categories.findIndex(cat => cat.id === categoryId);
@@ -308,38 +423,45 @@ export default function AdminPage() {
         // 성공 시 서버에서 최신 데이터 가져와서 동기화
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
-        setMenuData(data);
-        alert('항목이 성공적으로 삭제되었습니다!');
+        setMenuData(normalizeMenuData(data));
+        showStatus('success', '항목이 성공적으로 삭제되었습니다.');
       } else {
         // 실패 시 로컬 상태 롤백
         const res = await fetch('/api/menu', { headers: getAuthHeaders() });
         const data = await res.json();
-        setMenuData(data);
-        alert('항목 삭제에 실패했습니다.');
+        setMenuData(normalizeMenuData(data));
+        showStatus('error', '항목 삭제에 실패했습니다.');
       }
     } catch (error) {
       // 에러 시 로컬 상태 롤백
       const res = await fetch('/api/menu', { headers: getAuthHeaders() });
       const data = await res.json();
-      setMenuData(data);
-      alert('항목 삭제에 실패했습니다.');
+      setMenuData(normalizeMenuData(data));
+      showStatus('error', '항목 삭제에 실패했습니다.');
     }
+    setPendingAction(null);
   };
 
   const addItem = () => {
+    if (!confirmDiscardChanges()) return;
     if (!selectedCategory) {
-      alert('먼저 카테고리를 선택해주세요.');
+      showStatus('info', '먼저 카테고리를 선택해주세요.');
       return;
     }
+    const localizedEmpty = SUPPORTED_LOCALES.reduce((acc, locale) => {
+      acc[locale.id] = '';
+      return acc;
+    }, {});
     const newItem = {
       image: '',
-      title: '',
-      ingredients: '',
+      title: localizedEmpty,
+      ingredients: localizedEmpty,
       price: '',
       category: selectedCategory,
     };
     setEditingItem({ ...newItem, isNew: true });
     setSelectedItem('');
+    setHasUnsavedChanges(false);
   };
 
   const editItem = () => {
@@ -350,7 +472,14 @@ export default function AdminPage() {
     
     if (catIndex >= 0 && itemIndex >= 0) {
       const item = menuData.categories[catIndex].items[itemIndex];
-      setEditingItem({ ...item, catIndex, itemIndex });
+      setEditingItem({
+        ...item,
+        title: normalizeLocalizedField(item.title),
+        ingredients: normalizeLocalizedField(item.ingredients),
+        catIndex,
+        itemIndex,
+      });
+      setHasUnsavedChanges(false);
     }
   };
 
@@ -358,7 +487,7 @@ export default function AdminPage() {
     console.log('saveItem called, editingItem:', editingItem);
     if (!editingItem) {
       console.error('editingItem is null');
-      alert('편집 중인 항목이 없습니다.');
+      showStatus('info', '편집 중인 항목이 없습니다.');
       return;
     }
     if (editingItem.isNew) {
@@ -368,7 +497,7 @@ export default function AdminPage() {
       const categoryId = menuData.categories[editingItem.catIndex]?.id;
       if (!categoryId) {
         console.error('Invalid category index:', editingItem.catIndex);
-        alert('카테고리를 찾을 수 없습니다.');
+        showStatus('error', '카테고리를 찾을 수 없습니다.');
         return;
       }
       
@@ -385,6 +514,7 @@ export default function AdminPage() {
     setEditingItem(null);
     setSelectedCategory('');
     setSelectedItem('');
+    setHasUnsavedChanges(false);
   };
 
   const deleteItem = async () => {
@@ -398,6 +528,7 @@ export default function AdminPage() {
         await deleteItemFromServer(selectedCategory, itemIndex);
         setSelectedItem('');
         setEditingItem(null);
+        setHasUnsavedChanges(false);
       }
     }
   };
@@ -406,10 +537,11 @@ export default function AdminPage() {
     const file = event.target.files[0];
     if (file) {
       if (!editingItem) {
-        alert('먼저 편집할 메뉴 항목을 선택해주세요.');
+        showStatus('info', '먼저 편집할 메뉴 항목을 선택해주세요.');
         return;
       }
       try {
+        setImageUploading(true);
         const formData = new FormData();
         formData.append('file', file);
 
@@ -422,12 +554,16 @@ export default function AdminPage() {
           const data = await response.json();
           console.log('Image uploaded successfully:', data.imageUrl);
           setEditingItem({ ...editingItem, image: data.imageUrl });
+          setHasUnsavedChanges(true);
+          showStatus('success', '이미지 업로드가 완료되었습니다.');
         } else {
           const errorData = await response.json();
-          alert(`이미지 업로드 실패: ${errorData.error}`);
+          showStatus('error', `이미지 업로드 실패: ${errorData.error}`);
         }
       } catch (error) {
-        alert('이미지 업로드 중 오류가 발생했습니다.');
+        showStatus('error', '이미지 업로드 중 오류가 발생했습니다.');
+      } finally {
+        setImageUploading(false);
       }
     }
   };
@@ -438,6 +574,11 @@ export default function AdminPage() {
 
   return (
     <div className={styles.container}>
+      {status && (
+        <div className={`${styles.statusMessage} ${styles[`status${status.type}`]}`}>
+          {status.message}
+        </div>
+      )}
       <div className={styles.leftPanel}>
         <div className={styles.header}>
           <h1 className={styles.title}>메뉴 관리</h1>
@@ -468,9 +609,12 @@ export default function AdminPage() {
             <select
               value={selectedCategory}
               onChange={(e) => {
+                if (!confirmDiscardChanges()) return;
                 setSelectedCategory(e.target.value);
                 setSelectedItem('');
                 setEditingItem(null);
+                setItemSearch('');
+                setHasUnsavedChanges(false);
               }}
               className={styles.select}
             >
@@ -482,49 +626,69 @@ export default function AdminPage() {
               )) || []}
             </select>
           </div>
-          
-          {selectedCategory && (
-            <div className={styles.dropdownGroup}>
-              <label className={styles.label}>메뉴 항목 선택:</label>
-              <select
-                value={selectedItem}
-                onChange={(e) => setSelectedItem(e.target.value)}
-                className={styles.select}
-              >
-                <option value="">-- 항목을 선택하세요 --</option>
-                {menuData.categories
-                  .find(cat => cat.id === selectedCategory)
-                  ?.items.map((item, itemIndex) => (
-                    <option key={itemIndex} value={itemIndex}>
-                      {item.title || '제목 없음'}
-                    </option>
-                  ))}
-              </select>
+
+          {selectedCategory ? (
+            <div className={styles.itemListSection}>
+              <div className={styles.listHeader}>
+                <div className={styles.listTitle}>메뉴 항목</div>
+                <div className={styles.listCount}>{currentCategory?.items?.length || 0}개</div>
+              </div>
+              <input
+                type="text"
+                value={itemSearch}
+                onChange={(e) => setItemSearch(e.target.value)}
+                placeholder="이름 또는 가격 검색"
+                className={styles.searchInput}
+              />
+              <ul className={styles.itemList}>
+                {filteredItems.map(({ item, index }) => (
+                  <li key={`${index}-${item.image || 'item'}`}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!confirmDiscardChanges()) return;
+                        setSelectedItem(String(index));
+                        setHasUnsavedChanges(false);
+                      }}
+                      className={`${styles.itemButton} ${selectedItem === String(index) ? styles.itemButtonActive : ''}`}
+                    >
+                      <div className={styles.itemTitle}>{getLocalizedValue(item.title, activeLocale) || '제목 없음'}</div>
+                      <div className={styles.itemMeta}>{item.price || '가격 미입력'}</div>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {filteredItems.length === 0 && (
+                <div className={styles.emptyList}>해당 조건의 항목이 없습니다.</div>
+              )}
             </div>
-          )}
-          
-          {selectedCategory && selectedItem !== '' && (
-            <div className={styles.actionButtons}>
-              <button
-                onClick={deleteItem}
-                className={styles.deleteButton}
-              >
-                선택된 항목 삭제
-              </button>
-            </div>
+          ) : (
+            <div className={styles.emptyList}>카테고리를 선택하면 항목 목록이 표시됩니다.</div>
           )}
         </div>
       </div>
       <div className={styles.rightPanel}>
         {editingItem && (
           <div className={styles.editForm}>
-            <h2 className={styles.formTitle}>{editingItem.isNew ? '새 항목 추가' : '항목 편집'}</h2>
+            <div className={styles.formHeader}>
+              <h2 className={styles.formTitle}>{editingItem.isNew ? '새 항목 추가' : '항목 편집'}</h2>
+              {!editingItem.isNew && (
+                <button
+                  type="button"
+                  onClick={deleteItem}
+                  className={styles.deleteButton}
+                  disabled={pendingAction === 'delete'}
+                >
+                  {pendingAction === 'delete' ? '삭제 중...' : '항목 삭제'}
+                </button>
+              )}
+            </div>
             {editingItem.isNew && (
               <div className={styles.formGroup}>
                 <label className={styles.label}>카테고리: </label>
                 <select
                   value={editingItem.category}
-                  onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })}
+                  onChange={(e) => updateEditingField('category', e.target.value)}
                   className={styles.select}
                 >
                   {menuData?.categories?.map((cat) => (
@@ -534,11 +698,27 @@ export default function AdminPage() {
               </div>
             )}
             <div className={styles.formGroup}>
+              <label className={styles.label}>언어 선택:</label>
+              <div className={styles.localeTabs}>
+                {SUPPORTED_LOCALES.map((locale) => (
+                  <button
+                    key={locale.id}
+                    type="button"
+                    onClick={() => setActiveLocale(locale.id)}
+                    className={`${styles.localeTab} ${activeLocale === locale.id ? styles.localeTabActive : ''}`}
+                  >
+                    {locale.label}
+                  </button>
+                ))}
+              </div>
+              <div className={styles.localeHint}>현재 입력 언어: {SUPPORTED_LOCALES.find((loc) => loc.id === activeLocale)?.label}</div>
+            </div>
+            <div className={styles.formGroup}>
               <label className={styles.label}>제목: </label>
               <input
                 type="text"
-                value={editingItem.title}
-                onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                value={editingItem.title?.[activeLocale] || ''}
+                onChange={(e) => updateEditingLocalizedField('title', activeLocale, e.target.value)}
                 className={styles.input}
               />
             </div>
@@ -549,14 +729,16 @@ export default function AdminPage() {
                 accept="image/*"
                 onChange={handleImageUpload}
                 className={styles.input}
+                disabled={imageUploading}
               />
+              {imageUploading && <div className={styles.uploadingHint}>이미지 업로드 중...</div>}
               {editingItem.image && <img src={editingItem.image} alt="미리보기" className={styles.previewImage} />}
             </div>
             <div className={styles.formGroup}>
               <label className={styles.label}>재료: </label>
               <textarea
-                value={editingItem.ingredients}
-                onChange={(e) => setEditingItem({ ...editingItem, ingredients: e.target.value })}
+                value={editingItem.ingredients?.[activeLocale] || ''}
+                onChange={(e) => updateEditingLocalizedField('ingredients', activeLocale, e.target.value)}
                 className={styles.textarea}
               />
             </div>
@@ -564,8 +746,8 @@ export default function AdminPage() {
               <label className={styles.label}>가격: </label>
               <input
                 type="text"
-                value={editingItem.price}
-                onChange={(e) => setEditingItem({ ...editingItem, price: e.target.value })}
+                value={editingItem.price || ''}
+                onChange={(e) => updateEditingField('price', e.target.value)}
                 className={styles.input}
               />
             </div>
@@ -573,16 +755,28 @@ export default function AdminPage() {
               <button
                 onClick={saveItem}
                 className={styles.saveItemButton}
+                disabled={pendingAction === 'add' || pendingAction === 'update'}
               >
-                항목 저장
+                {pendingAction === 'add' || pendingAction === 'update' ? '저장 중...' : '항목 저장'}
               </button>
               <button
-                onClick={() => setEditingItem(null)}
+                onClick={() => {
+                  if (!confirmDiscardChanges()) return;
+                  setEditingItem(null);
+                  setSelectedItem('');
+                  setHasUnsavedChanges(false);
+                }}
                 className={styles.cancelButton}
               >
                 취소
               </button>
             </div>
+          </div>
+        )}
+        {!editingItem && (
+          <div className={styles.emptyState}>
+            <h3>편집할 항목을 선택하세요</h3>
+            <p>왼쪽에서 카테고리를 선택한 뒤 항목을 선택하거나 새 항목을 추가하세요.</p>
           </div>
         )}
       </div>

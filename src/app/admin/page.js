@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 
-const DEFAULT_LOCALE = 'ko';
+const DEFAULT_LOCALE = 'en';
 const SUPPORTED_LOCALES = [
-  { id: 'ko', label: '한국어' },
   { id: 'en', label: 'English' },
+  { id: 'ko', label: '한국어' },
 ];
 
 const normalizeLocalizedField = (value) => {

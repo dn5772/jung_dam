@@ -169,6 +169,7 @@
 .itemTitle {
   font-weight: 600;
   flex: 1;
+  color: #111827;
 }
 
 .itemMeta {

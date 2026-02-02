@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 
-const DEFAULT_LOCALE = 'ko';
+const DEFAULT_LOCALE = 'en';
 
 const getLocalizedValue = (value, locale) => {
   if (!value) return '';

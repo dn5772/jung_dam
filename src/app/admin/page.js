@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 
-const DEFAULT_LOCALE = 'en';
+const DEFAULT_LOCALE = 'ko';
+const DISPLAY_LOCALE = 'ko';
 const SUPPORTED_LOCALES = [
-  { id: 'en', label: 'English' },
   { id: 'ko', label: '한국어' },
+  { id: 'en', label: 'English' },
 ];
 
 const normalizeLocalizedField = (value) => {
@@ -34,6 +35,52 @@ const normalizeMenuData = (data) => {
         : [],
     })),
   };
+};
+
+const mergeLocalizedMenuData = (enData, koData) => {
+  const enCategories = enData?.categories || [];
+  const koCategories = koData?.categories || [];
+  const koById = new Map(koCategories.map((category) => [category.id, category]));
+  const enById = new Map(enCategories.map((category) => [category.id, category]));
+  const baseCategories = enCategories.length ? enCategories : koCategories;
+
+  const mergedCategories = baseCategories.map((baseCategory) => {
+    const enCategory = enById.get(baseCategory.id) || {};
+    const koCategory = koById.get(baseCategory.id) || {};
+    const enItems = enCategory.items || [];
+    const koItems = koCategory.items || [];
+    const maxItems = Math.max(enItems.length, koItems.length);
+
+    return {
+      id: baseCategory.id,
+      name: {
+        en: enCategory.name || '',
+        ko: koCategory.name || '',
+      },
+      description: {
+        en: enCategory.description || '',
+        ko: koCategory.description || '',
+      },
+      items: Array.from({ length: maxItems }).map((_, index) => {
+        const enItem = enItems[index] || {};
+        const koItem = koItems[index] || {};
+        return {
+          image: enItem.image || koItem.image || '',
+          title: {
+            en: enItem.title || '',
+            ko: koItem.title || '',
+          },
+          ingredients: {
+            en: enItem.ingredients || '',
+            ko: koItem.ingredients || '',
+          },
+          price: enItem.price || koItem.price || '',
+        };
+      }),
+    };
+  });
+
+  return normalizeMenuData({ categories: mergedCategories });
 };
 
 const getLocalizedValue = (value, locale) => {
@@ -172,6 +219,7 @@ export default function AdminPage() {
   const [itemSearch, setItemSearch] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [panelVisible, setPanelVisible] = useState(false);
   const statusTimeoutRef = useRef(null);
 
   // API 요청을 위한 헤더 생성 함수
@@ -179,6 +227,20 @@ export default function AdminPage() {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
   });
+
+  const fetchLocalizedMenuData = async () => {
+    const [enResponse, koResponse] = await Promise.all([
+      fetch('/api/menu?locale=en', { headers: getAuthHeaders() }),
+      fetch('/api/menu?locale=ko', { headers: getAuthHeaders() }),
+    ]);
+
+    const [enData, koData] = await Promise.all([
+      enResponse.json(),
+      koResponse.json(),
+    ]);
+
+    return mergeLocalizedMenuData(enData, koData);
+  };
 
   const showStatus = (type, message) => {
     setStatus({ type, message });
@@ -217,12 +279,9 @@ export default function AdminPage() {
   useEffect(() => {
     // 로그인된 경우에만 메뉴 데이터 로딩
     if (isLoggedIn && token) {
-      fetch('/api/menu', {
-        headers: getAuthHeaders(),
-      })
-        .then((res) => res.json())
+      fetchLocalizedMenuData()
         .then((data) => {
-          setMenuData(normalizeMenuData(data));
+          setMenuData(data);
           setDataLoading(false);
         })
         .catch((error) => {
@@ -267,20 +326,65 @@ export default function AdminPage() {
     .filter(({ item }) => {
       const query = itemSearch.trim().toLowerCase();
       if (!query) return true;
-      const localizedTitle = getLocalizedValue(item.title, activeLocale).toLowerCase();
+      const localizedTitle = getLocalizedValue(item.title, DISPLAY_LOCALE).toLowerCase();
       const allTitles = typeof item.title === 'object' ? Object.values(item.title).join(' ').toLowerCase() : '';
       const price = (item.price || '').toLowerCase();
       return `${localizedTitle} ${allTitles} ${price}`.includes(query);
     }) || [];
 
+  const convertToLocaleSpecific = (data) => ({
+    en: {
+      categories: data.categories.map((category) => ({
+        id: category.id,
+        name: getLocalizedValue(category.name, 'en'),
+        description: getLocalizedValue(category.description, 'en'),
+        items: category.items.map((item) => ({
+          image: item.image,
+          title: getLocalizedValue(item.title, 'en'),
+          ingredients: getLocalizedValue(item.ingredients, 'en'),
+          price: item.price,
+        })),
+      })),
+    },
+    ko: {
+      categories: data.categories.map((category) => ({
+        id: category.id,
+        name: getLocalizedValue(category.name, 'ko'),
+        description: getLocalizedValue(category.description, 'ko'),
+        items: category.items.map((item) => ({
+          image: item.image,
+          title: getLocalizedValue(item.title, 'ko'),
+          ingredients: getLocalizedValue(item.ingredients, 'ko'),
+          price: item.price,
+        })),
+      })),
+    },
+  });
+
+  const buildLocalizedItemPayload = (item) => ({
+    en: {
+      image: item.image,
+      title: getLocalizedValue(item.title, 'en'),
+      ingredients: getLocalizedValue(item.ingredients, 'en'),
+      price: item.price,
+    },
+    ko: {
+      image: item.image,
+      title: getLocalizedValue(item.title, 'ko'),
+      ingredients: getLocalizedValue(item.ingredients, 'ko'),
+      price: item.price,
+    },
+  });
+
   const handleSave = async () => {
     setSaving(true);
     setPendingAction('saveAll');
     try {
+      const localeData = convertToLocaleSpecific(menuData);
       const response = await fetch('/api/menu', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(menuData),
+        body: JSON.stringify(localeData),
       });
       if (response.ok) {
         showStatus('success', '메뉴 데이터가 성공적으로 저장되었습니다.');
@@ -322,28 +426,25 @@ export default function AdminPage() {
         body: JSON.stringify({
           action: 'add',
           categoryId: itemData.category,
-          data: newItem,
+          data: buildLocalizedItemPayload(newItem),
         }),
       });
 
       if (response.ok) {
         // 성공 시 서버에서 최신 데이터 가져와서 동기화
-        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-        const data = await res.json();
-        setMenuData(normalizeMenuData(data));
+        const data = await fetchLocalizedMenuData();
+        setMenuData(data);
         showStatus('success', '항목이 성공적으로 추가되었습니다.');
       } else {
         // 실패 시 로컬 상태 롤백
-        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-        const data = await res.json();
-        setMenuData(normalizeMenuData(data));
+        const data = await fetchLocalizedMenuData();
+        setMenuData(data);
         showStatus('error', '항목 추가에 실패했습니다.');
       }
     } catch (error) {
       // 에러 시 로컬 상태 롤백
-      const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-      const data = await res.json();
-      setMenuData(normalizeMenuData(data));
+      const data = await fetchLocalizedMenuData();
+      setMenuData(data);
       showStatus('error', '항목 추가에 실패했습니다.');
     }
     setPendingAction(null);
@@ -363,7 +464,6 @@ export default function AdminPage() {
     }
 
     try {
-      console.log('Sending PATCH request:', { action: 'update', categoryId, itemIndex, data: itemData });
       const response = await fetch('/api/menu', {
         method: 'PATCH',
         headers: getAuthHeaders(),
@@ -371,29 +471,24 @@ export default function AdminPage() {
           action: 'update',
           categoryId,
           itemIndex,
-          data: itemData,
+          data: buildLocalizedItemPayload(itemData),
         }),
       });
-      console.log('PATCH response status:', response.status);
       if (response.ok) {
         // 성공 시 서버에서 최신 데이터 가져와서 동기화
-        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-        const data = await res.json();
-        console.log('Refreshed menu data:', data);
-        setMenuData(normalizeMenuData(data));
+        const data = await fetchLocalizedMenuData();
+        setMenuData(data);
         showStatus('success', '항목이 성공적으로 수정되었습니다.');
       } else {
         // 실패 시 로컬 상태 롤백
-        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-        const data = await res.json();
-        setMenuData(normalizeMenuData(data));
+        const data = await fetchLocalizedMenuData();
+        setMenuData(data);
         showStatus('error', '항목 수정에 실패했습니다.');
       }
     } catch (error) {
       // 에러 시 로컬 상태 롤백
-      const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-      const data = await res.json();
-      setMenuData(normalizeMenuData(data));
+      const data = await fetchLocalizedMenuData();
+      setMenuData(data);
       showStatus('error', '항목 수정에 실패했습니다.');
     }
     setPendingAction(null);
@@ -421,22 +516,19 @@ export default function AdminPage() {
       });
       if (response.ok) {
         // 성공 시 서버에서 최신 데이터 가져와서 동기화
-        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-        const data = await res.json();
-        setMenuData(normalizeMenuData(data));
+        const data = await fetchLocalizedMenuData();
+        setMenuData(data);
         showStatus('success', '항목이 성공적으로 삭제되었습니다.');
       } else {
         // 실패 시 로컬 상태 롤백
-        const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-        const data = await res.json();
-        setMenuData(normalizeMenuData(data));
+        const data = await fetchLocalizedMenuData();
+        setMenuData(data);
         showStatus('error', '항목 삭제에 실패했습니다.');
       }
     } catch (error) {
       // 에러 시 로컬 상태 롤백
-      const res = await fetch('/api/menu', { headers: getAuthHeaders() });
-      const data = await res.json();
-      setMenuData(normalizeMenuData(data));
+      const data = await fetchLocalizedMenuData();
+      setMenuData(data);
       showStatus('error', '항목 삭제에 실패했습니다.');
     }
     setPendingAction(null);
@@ -579,7 +671,14 @@ export default function AdminPage() {
           {status.message}
         </div>
       )}
-      <div className={styles.leftPanel}>
+      <button 
+        className={styles.mobileMenuToggle}
+        onClick={() => setPanelVisible(!panelVisible)}
+      >
+        <i className={`bi ${panelVisible ? 'bi-x-lg' : 'bi-list'}`}></i>
+        <span>{panelVisible ? '닫기' : '메뉴 선택'}</span>
+      </button>
+      <div className={`${styles.leftPanel} ${panelVisible ? styles.leftPanelVisible : ''}`}>
         <div className={styles.header}>
           <h1 className={styles.title}>메뉴 관리</h1>
           <button
@@ -621,7 +720,7 @@ export default function AdminPage() {
               <option value="">-- 카테고리를 선택하세요 --</option>
               {menuData?.categories?.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {category.name}
+                  {getLocalizedValue(category.name, DISPLAY_LOCALE) || category.name}
                 </option>
               )) || []}
             </select>
@@ -649,10 +748,11 @@ export default function AdminPage() {
                         if (!confirmDiscardChanges()) return;
                         setSelectedItem(String(index));
                         setHasUnsavedChanges(false);
+                        setPanelVisible(false);
                       }}
                       className={`${styles.itemButton} ${selectedItem === String(index) ? styles.itemButtonActive : ''}`}
                     >
-                      <div className={styles.itemTitle}>{getLocalizedValue(item.title, activeLocale) || '제목 없음'}</div>
+                      <div className={styles.itemTitle}>{getLocalizedValue(item.title, DISPLAY_LOCALE) || '제목 없음'}</div>
                       <div className={styles.itemMeta}>{item.price || '가격 미입력'}</div>
                     </button>
                   </li>
@@ -692,7 +792,9 @@ export default function AdminPage() {
                   className={styles.select}
                 >
                   {menuData?.categories?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>
+                      {getLocalizedValue(cat.name, DISPLAY_LOCALE) || cat.name}
+                    </option>
                   )) || []}
                 </select>
               </div>

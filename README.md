@@ -84,7 +84,7 @@ npm run dev
 기존 메뉴 데이터를 Vercel Blob으로 마이그레이션하려면:
 
 ```bash
-node scripts/migrate-to-blob.js
+node scripts/blob/migrate-to-blob.js
 ```
 
 ### Vercel 배포
@@ -139,7 +139,7 @@ node scripts/migrate-to-blob.js
 
 ### Blob 상태 확인
 ```bash
-node scripts/check-blob-status.js
+node scripts/blob/check-blob-status.js
 ```
 
 Vercel Blob에 저장된 파일들의 상태를 확인할 수 있습니다.

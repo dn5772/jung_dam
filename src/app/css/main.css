@@ -1686,3 +1686,67 @@ section,
 .contact .php-email-form button[type=submit]:hover {
   background: color-mix(in srgb, var(--accent-color), transparent 20%);
 }
+
+/*--------------------------------------------------------------
+# Language Toggle Button
+--------------------------------------------------------------*/
+.btn-language-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: var(--nav-color);
+  border: 2px solid var(--nav-color);
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--nav-font);
+}
+
+.btn-language-toggle:hover {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--contrast-color);
+}
+
+.btn-language-toggle i {
+  font-size: 18px;
+}
+
+.btn-language-toggle .language-text {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+@media (max-width: 1200px) {
+  .btn-language-toggle {
+    padding: 6px 12px;
+  }
+  
+  .btn-language-toggle .language-text {
+    display: none;
+  }
+  
+  .btn-language-toggle i {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 575px) {
+  .header-actions {
+    gap: 8px;
+  }
+  
+  .btn-language-toggle {
+    padding: 6px 10px;
+  }
+}

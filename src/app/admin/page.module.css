@@ -4,6 +4,35 @@
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
+  position: relative;
+}
+
+.mobileMenuToggle {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1001;
+  padding: 12px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.mobileMenuToggle:hover {
+  background-color: #0056b3;
+}
+
+.mobileMenuToggle i {
+  font-size: 1.2em;
 }
 
 .statusMessage {
@@ -338,69 +367,110 @@
 }
 
 /* Mobile responsive styles */
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    padding: 15px;
-    gap: 15px;
+@media (max-width: 900px) {
+  .mobileMenuToggle {
+    display: flex;
   }
 
   .leftPanel {
-    margin-right: 0;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 85%;
+    max-width: 400px;
+    height: 100vh;
+    background-color: white;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+
+  .leftPanelVisible {
+    left: 0;
+  }
+
+  .rightPanel {
+    width: 100%;
+    flex: 1;
+  }
+
+  .container {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .saveButton,
+  .addButton {
+    padding: 10px 14px;
+    font-size: 0.95em;
+    margin-bottom: 12px;
   }
 
   .title {
-    font-size: 1.3em;
-    text-align: center;
-  }
-
-  .logoutButton {
-    padding: 10px 15px;
-    font-size: 1em;
-  }
-
-  .saveButton, .addButton {
-    padding: 15px;
-    font-size: 1.1em;
-  }
-
-  .deleteButton {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1em;
-  }
-
-  .editForm {
-    padding: 15px;
-  }
-
-  .formTitle {
     font-size: 1.2em;
   }
 
-  .input, .textarea, .select {
-    padding: 15px;
+  .itemList {
+    max-height: 240px;
+  }
+
+  .editForm {
+    padding: 14px;
+  }
+
+  .formTitle {
     font-size: 1.1em;
+    margin-bottom: 14px;
+  }
+
+  .input,
+  .textarea,
+  .select {
+    padding: 10px 12px;
+    font-size: 0.95em;
   }
 
   .previewImage {
     width: 100%;
     height: auto;
-    max-height: 200px;
+    max-height: 180px;
   }
 
   .buttonGroup {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    display: flex;
     flex-direction: column;
+    padding: 12px;
+    gap: 12px;
   }
 
-  .saveItemButton, .cancelButton {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1em;
+  .leftPanel {
+    width: 90%;
+    max-width: 100%;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .saveButton,
+  .addButton,
+  .deleteButton {
+    padding: 12px;
+    font-size: 1em;
   }
 
   .itemList {
-    max-height: 260px;
+    max-height: 220px;
   }
 
   .formHeader {

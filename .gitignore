@@ -46,5 +46,8 @@ next-env.d.ts
 src/components/MenuSection.js.backup
 
 # utility scripts (development only)
+/scripts
 check-blob-status.js
 migrate-to-blob.js
+
+/backup

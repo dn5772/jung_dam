@@ -1,34 +1,36 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function MenuSection() {
+  const { locale } = useLanguage();
   const [menuData, setMenuData] = useState({ categories: [] });
   const [loading, setLoading] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     const fetchMenuData = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('/api/menu');
+        const response = await fetch(`/api/menu?locale=${locale}`);
         if (response.ok) {
           const data = await response.json();
           setMenuData(data);
         } else {
           console.error('Failed to fetch menu data:', response.status, response.statusText);
-          // 사용자에게 에러 표시 (선택사항)
-          setMenuData({ categories: [] }); // 빈 데이터로 폴백
+          setMenuData({ categories: [] });
         }
       } catch (error) {
         console.error('Network error while fetching menu data:', error);
-        setMenuData({ categories: [] }); // 빈 데이터로 폴백
+        setMenuData({ categories: [] });
       } finally {
         setLoading(false);
       }
     };
 
     fetchMenuData();
-  }, []);
+  }, [locale]); // locale 변경 시 다시 fetch
 
   useEffect(() => {
     // GLightbox 초기화
@@ -140,7 +142,12 @@ export default function MenuSection() {
                   <div key={itemIndex} className={`col-lg-4 menu-item`}>
                     {item.image ? (
                       <a href={item.image} className={`glightbox`}>
-                        <img src={item.image} className={`menu-img img-fluid`} alt={item.title} loading="lazy" />
+                        <img
+                          src={item.image}
+                          className={`menu-img img-fluid`}
+                          alt={item.title}
+                          loading="lazy"
+                        />
                       </a>
                     ) : (
                       <div className="menu-img-placeholder" style={{

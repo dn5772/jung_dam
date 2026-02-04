@@ -3,21 +3,27 @@ import { put, del, list } from '@vercel/blob';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
-const MENU_DATA_KEY = 'menuData-en.json'; // 영어 버전 메뉴 데이터
+const DEFAULT_LOCALE = 'en';
+const SUPPORTED_LOCALES = ['en', 'ko'];
 
 // 환경 변수 검증
 if (!JWT_SECRET || !BLOB_TOKEN) {
   throw new Error('Missing required environment variables: JWT_SECRET or BLOB_READ_WRITE_TOKEN');
 }
 
+const getSafeLocale = (locale) => (SUPPORTED_LOCALES.includes(locale) ? locale : DEFAULT_LOCALE);
+
+const getMenuDataKey = (locale) => `menuData-${getSafeLocale(locale)}.json`;
+
 // 메뉴 데이터 초기 로드 함수 (Vercel Blob에서)
-const loadMenuData = async () => {
+const loadMenuData = async (locale = DEFAULT_LOCALE) => {
   try {
     // Vercel Blob에서 모든 파일 목록 가져오기
     const { blobs } = await list({ token: BLOB_TOKEN });
     
     // 메뉴 데이터 파일 찾기
-    const menuDataBlobs = blobs.filter(blob => blob.pathname === MENU_DATA_KEY);
+    const menuDataKey = getMenuDataKey(locale);
+    const menuDataBlobs = blobs.filter(blob => blob.pathname === menuDataKey);
 
     if (menuDataBlobs.length > 0) {
       // 최신 버전의 파일 다운로드
@@ -36,18 +42,20 @@ const loadMenuData = async () => {
 };
 
 // 메뉴 데이터 저장 함수 (Vercel Blob에)
-const saveMenuData = async (data) => {
+const saveMenuData = async (locale, data) => {
   try {
+    const menuDataKey = getMenuDataKey(locale);
+
     // 기존 파일들을 삭제
     const { blobs } = await list({ token: BLOB_TOKEN });
-    const existingBlobs = blobs.filter(blob => blob.pathname === MENU_DATA_KEY);
+    const existingBlobs = blobs.filter(blob => blob.pathname === menuDataKey);
     
     for (const blob of existingBlobs) {
       await del(blob.url, { token: BLOB_TOKEN });
     }
 
     // 새 데이터를 업로드
-    await put(MENU_DATA_KEY, JSON.stringify(data, null, 2), {
+    await put(menuDataKey, JSON.stringify(data, null, 2), {
       token: BLOB_TOKEN,
       access: 'public',
       contentType: 'application/json',
@@ -76,10 +84,15 @@ const verifyToken = (request) => {
 
 export async function GET(request) {
   try {
-    const data = await loadMenuData();
+    const { searchParams } = new URL(request.url);
+    const locale = getSafeLocale(searchParams.get('locale') || DEFAULT_LOCALE);
+    const data = await loadMenuData(locale);
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'Failed to read menu data' }), {
@@ -100,8 +113,16 @@ export async function POST(request) {
   }
 
   try {
-    const newData = await request.json();
-    await saveMenuData(newData);
+    const { en, ko } = await request.json();
+    if (!en || !ko) {
+      return new Response(JSON.stringify({ error: 'Invalid payload: en/ko required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    await saveMenuData('en', en);
+    await saveMenuData('ko', ko);
     return new Response(JSON.stringify({ message: 'Menu data updated successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -126,54 +147,50 @@ export async function PATCH(request) {
 
   try {
     const { action, categoryId, itemIndex, data } = await request.json();
-    const currentData = await loadMenuData();
+    const enData = await loadMenuData('en');
+    const koData = await loadMenuData('ko');
 
     if (action === 'add') {
-      // 새 아이템 추가
-      const categoryIndex = currentData.categories.findIndex(cat => cat.id === categoryId);
-      if (categoryIndex >= 0) {
-        currentData.categories[categoryIndex].items.push(data);
+      const enCategoryIndex = enData.categories.findIndex(cat => cat.id === categoryId);
+      const koCategoryIndex = koData.categories.findIndex(cat => cat.id === categoryId);
+      if (enCategoryIndex >= 0 && koCategoryIndex >= 0 && data?.en && data?.ko) {
+        enData.categories[enCategoryIndex].items.push(data.en);
+        koData.categories[koCategoryIndex].items.push(data.ko);
       }
     } else if (action === 'update') {
-      // 아이템 업데이트
-      console.log('Update action received:', { categoryId, itemIndex, data });
-      const categoryIndex = currentData.categories.findIndex(cat => cat.id === categoryId);
-      console.log('Category index found:', categoryIndex);
-      if (categoryIndex >= 0 && itemIndex >= 0) {
-        const beforeUpdate = currentData.categories[categoryIndex].items[itemIndex];
-        console.log('Before update:', beforeUpdate);
-        currentData.categories[categoryIndex].items[itemIndex] = {
-          ...currentData.categories[categoryIndex].items[itemIndex],
-          ...data
+      const enCategoryIndex = enData.categories.findIndex(cat => cat.id === categoryId);
+      const koCategoryIndex = koData.categories.findIndex(cat => cat.id === categoryId);
+      if (enCategoryIndex >= 0 && koCategoryIndex >= 0 && itemIndex >= 0 && data?.en && data?.ko) {
+        enData.categories[enCategoryIndex].items[itemIndex] = {
+          ...enData.categories[enCategoryIndex].items[itemIndex],
+          ...data.en,
         };
-        const afterUpdate = currentData.categories[categoryIndex].items[itemIndex];
-        console.log('After update:', afterUpdate);
-      } else {
-        console.log('Invalid category index or item index:', { categoryIndex, itemIndex });
+        koData.categories[koCategoryIndex].items[itemIndex] = {
+          ...koData.categories[koCategoryIndex].items[itemIndex],
+          ...data.ko,
+        };
       }
     } else if (action === 'delete') {
-      // 아이템 삭제 및 이미지 파일 삭제
-      const categoryIndex = currentData.categories.findIndex(cat => cat.id === categoryId);
-      if (categoryIndex >= 0 && itemIndex >= 0) {
-        const itemToDelete = currentData.categories[categoryIndex].items[itemIndex];
+      const enCategoryIndex = enData.categories.findIndex(cat => cat.id === categoryId);
+      const koCategoryIndex = koData.categories.findIndex(cat => cat.id === categoryId);
+      if (enCategoryIndex >= 0 && koCategoryIndex >= 0 && itemIndex >= 0) {
+        const itemToDelete = enData.categories[enCategoryIndex].items[itemIndex];
 
-        // Vercel Blob 이미지 파일이 있으면 삭제
-        if (itemToDelete.image && itemToDelete.image.startsWith('https://')) {
+        if (itemToDelete?.image && itemToDelete.image.startsWith('https://')) {
           try {
             await del(itemToDelete.image, { token: BLOB_TOKEN });
-            console.log(`Vercel Blob 이미지 파일 삭제됨: ${itemToDelete.image}`);
           } catch (error) {
             console.error('Vercel Blob 이미지 파일 삭제 실패:', error);
-            // 이미지 삭제 실패해도 메뉴 데이터는 삭제 진행
           }
         }
 
-        // 메뉴 데이터에서 항목 삭제
-        currentData.categories[categoryIndex].items.splice(itemIndex, 1);
+        enData.categories[enCategoryIndex].items.splice(itemIndex, 1);
+        koData.categories[koCategoryIndex].items.splice(itemIndex, 1);
       }
     }
 
-    await saveMenuData(currentData);
+    await saveMenuData('en', enData);
+    await saveMenuData('ko', koData);
     return new Response(JSON.stringify({ message: 'Menu data updated successfully' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

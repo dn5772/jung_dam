@@ -11,6 +11,7 @@ import Script from 'next/script';
 import YummyScripts from "../components/YummyScripts";
 import { Roboto, Inter, Amatic_SC } from 'next/font/google';
 import { LanguageProvider } from '../contexts/LanguageContext';
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,6 +57,7 @@ export default function RootLayout({ children }) {
         <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
         <YummyScripts />
         <Script src="/js/purecounter_vanilla.js" strategy="afterInteractive" />
+        <Analytics />
       </body>
     </html>
   );

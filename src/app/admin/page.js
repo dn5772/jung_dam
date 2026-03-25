@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import styles from './page.module.css';
 
 const DEFAULT_LOCALE = 'ko';
-const DISPLAY_LOCALE = 'ko';
 const SUPPORTED_LOCALES = [
   { id: 'ko', label: '한국어' },
   { id: 'en', label: 'English' },
@@ -42,17 +41,22 @@ const mergeLocalizedMenuData = (enData, koData) => {
   const koCategories = koData?.categories || [];
   const koById = new Map(koCategories.map((category) => [category.id, category]));
   const enById = new Map(enCategories.map((category) => [category.id, category]));
-  const baseCategories = enCategories.length ? enCategories : koCategories;
 
-  const mergedCategories = baseCategories.map((baseCategory) => {
-    const enCategory = enById.get(baseCategory.id) || {};
-    const koCategory = koById.get(baseCategory.id) || {};
+  // Union of all category IDs: EN order first, then KO-only categories appended
+  const orderedIds = [
+    ...enCategories.map(c => c.id),
+    ...koCategories.filter(c => !enById.has(c.id)).map(c => c.id),
+  ];
+
+  const mergedCategories = orderedIds.map((id) => {
+    const enCategory = enById.get(id) || {};
+    const koCategory = koById.get(id) || {};
     const enItems = enCategory.items || [];
     const koItems = koCategory.items || [];
     const maxItems = Math.max(enItems.length, koItems.length);
 
     return {
-      id: baseCategory.id,
+      id,
       name: {
         en: enCategory.name || '',
         ko: koCategory.name || '',
@@ -301,12 +305,14 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedCategory && selectedItem !== '' && menuData) {
+    if (selectedCategory && selectedItem !== '') {
       editItem();
     } else {
       setEditingItem(null);
     }
-  }, [selectedCategory, selectedItem, menuData]);
+    // menuData intentionally excluded: background refetches should not overwrite unsaved edits
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, selectedItem]);
 
   if (isLoading) {
     return <div className={styles.container}>로딩 중...</div>;
@@ -326,7 +332,7 @@ export default function AdminPage() {
     .filter(({ item }) => {
       const query = itemSearch.trim().toLowerCase();
       if (!query) return true;
-      const localizedTitle = getLocalizedValue(item.title, DISPLAY_LOCALE).toLowerCase();
+      const localizedTitle = getLocalizedValue(item.title, DEFAULT_LOCALE).toLowerCase();
       const allTitles = typeof item.title === 'object' ? Object.values(item.title).join(' ').toLowerCase() : '';
       const price = (item.price || '').toLowerCase();
       return `${localizedTitle} ${allTitles} ${price}`.includes(query);
@@ -576,9 +582,7 @@ export default function AdminPage() {
   };
 
   const saveItem = async () => {
-    console.log('saveItem called, editingItem:', editingItem);
     if (!editingItem) {
-      console.error('editingItem is null');
       showStatus('info', '편집 중인 항목이 없습니다.');
       return;
     }
@@ -600,7 +604,6 @@ export default function AdminPage() {
         ingredients: editingItem.ingredients,
         price: editingItem.price,
       };
-      console.log('Updating item:', { categoryId, itemIndex, itemData });
       await updateItemOnServer(categoryId, itemIndex, itemData);
     }
     setEditingItem(null);
@@ -639,12 +642,12 @@ export default function AdminPage() {
 
         const response = await fetch('/api/upload', {
           method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
           body: formData,
         });
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Image uploaded successfully:', data.imageUrl);
           setEditingItem({ ...editingItem, image: data.imageUrl });
           setHasUnsavedChanges(true);
           showStatus('success', '이미지 업로드가 완료되었습니다.');
@@ -659,10 +662,6 @@ export default function AdminPage() {
       }
     }
   };
-
-  if (dataLoading) {
-    return <div className={styles.container}>Loading menu data...</div>;
-  }
 
   return (
     <div className={styles.container}>
@@ -720,7 +719,7 @@ export default function AdminPage() {
               <option value="">-- 카테고리를 선택하세요 --</option>
               {menuData?.categories?.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {getLocalizedValue(category.name, DISPLAY_LOCALE) || category.name}
+                  {getLocalizedValue(category.name, DEFAULT_LOCALE) || category.name}
                 </option>
               )) || []}
             </select>
@@ -752,7 +751,7 @@ export default function AdminPage() {
                       }}
                       className={`${styles.itemButton} ${selectedItem === String(index) ? styles.itemButtonActive : ''}`}
                     >
-                      <div className={styles.itemTitle}>{getLocalizedValue(item.title, DISPLAY_LOCALE) || '제목 없음'}</div>
+                      <div className={styles.itemTitle}>{getLocalizedValue(item.title, DEFAULT_LOCALE) || '제목 없음'}</div>
                       <div className={styles.itemMeta}>{item.price || '가격 미입력'}</div>
                     </button>
                   </li>
@@ -793,7 +792,7 @@ export default function AdminPage() {
                 >
                   {menuData?.categories?.map((cat) => (
                     <option key={cat.id} value={cat.id}>
-                      {getLocalizedValue(cat.name, DISPLAY_LOCALE) || cat.name}
+                      {getLocalizedValue(cat.name, DEFAULT_LOCALE) || cat.name}
                     </option>
                   )) || []}
                 </select>

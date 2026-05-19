@@ -44,6 +44,7 @@ const saveMenuData = async (locale, data) => {
       access: 'public',
       contentType: 'application/json',
       addRandomSuffix: false,
+      allowOverwrite: true,
     });
   } catch (error) {
     console.error('Failed to save menu data to Blob:', error);

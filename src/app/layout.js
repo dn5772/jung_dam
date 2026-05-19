@@ -49,7 +49,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${inter.variable} ${amaticSC.variable}`}>
         <LanguageProvider>
           {children}

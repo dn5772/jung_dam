@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
 import { put, del, list } from '@vercel/blob';
+import { NextResponse } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 const DEFAULT_LOCALE = 'en';
 const SUPPORTED_LOCALES = ['en', 'ko'];
 
-// 환경 변수 검증
 if (!JWT_SECRET || !BLOB_TOKEN) {
   throw new Error('Missing required environment variables: JWT_SECRET or BLOB_READ_WRITE_TOKEN');
 }
@@ -15,25 +15,19 @@ const getSafeLocale = (locale) => (SUPPORTED_LOCALES.includes(locale) ? locale :
 
 const getMenuDataKey = (locale) => `menuData-${getSafeLocale(locale)}.json`;
 
-// 메뉴 데이터 초기 로드 함수 (Vercel Blob에서)
 const loadMenuData = async (locale = DEFAULT_LOCALE) => {
   try {
-    // Vercel Blob에서 모든 파일 목록 가져오기
     const { blobs } = await list({ token: BLOB_TOKEN });
-    
-    // 메뉴 데이터 파일 찾기
     const menuDataKey = getMenuDataKey(locale);
-    const menuDataBlobs = blobs.filter(blob => blob.pathname === menuDataKey);
+    const menuDataBlob = blobs.find(blob => blob.pathname === menuDataKey);
 
-    if (menuDataBlobs.length > 0) {
-      // 최신 버전의 파일 다운로드
-      const response = await fetch(menuDataBlobs[0].url);
+    if (menuDataBlob) {
+      const response = await fetch(menuDataBlob.url);
       if (response.ok) {
         return await response.json();
       }
     }
 
-    // Blob에 데이터가 없으면 빈 데이터 반환
     return { categories: [] };
   } catch (error) {
     console.error('Failed to load menu data from Blob:', error);
@@ -41,24 +35,15 @@ const loadMenuData = async (locale = DEFAULT_LOCALE) => {
   }
 };
 
-// 메뉴 데이터 저장 함수 (Vercel Blob에)
+// put with addRandomSuffix: false overwrites existing blob atomically — no delete needed
 const saveMenuData = async (locale, data) => {
   try {
     const menuDataKey = getMenuDataKey(locale);
-
-    // 기존 파일들을 삭제
-    const { blobs } = await list({ token: BLOB_TOKEN });
-    const existingBlobs = blobs.filter(blob => blob.pathname === menuDataKey);
-    
-    for (const blob of existingBlobs) {
-      await del(blob.url, { token: BLOB_TOKEN });
-    }
-
-    // 새 데이터를 업로드
     await put(menuDataKey, JSON.stringify(data, null, 2), {
       token: BLOB_TOKEN,
       access: 'public',
       contentType: 'application/json',
+      addRandomSuffix: false,
     });
   } catch (error) {
     console.error('Failed to save menu data to Blob:', error);
@@ -66,18 +51,16 @@ const saveMenuData = async (locale, data) => {
   }
 };
 
-// JWT 토큰 검증 함수
 const verifyToken = (request) => {
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
-
-    const token = authHeader.substring(7); // "Bearer " 제거
+    const token = authHeader.substring(7);
     const decoded = jwt.verify(token, JWT_SECRET);
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -87,7 +70,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const locale = getSafeLocale(searchParams.get('locale') || DEFAULT_LOCALE);
     const data = await loadMenuData(locale);
-    return new Response(JSON.stringify(data), {
+    return new NextResponse(JSON.stringify(data), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -95,86 +78,64 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to read menu data' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ error: 'Failed to read menu data' }, { status: 500 });
   }
 }
 
 export async function POST(request) {
-  // JWT 검증
   const user = verifyToken(request);
   if (!user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const { en, ko } = await request.json();
     if (!en || !ko) {
-      return new Response(JSON.stringify({ error: 'Invalid payload: en/ko required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return NextResponse.json({ error: 'Invalid payload: en/ko required' }, { status: 400 });
     }
 
-    await saveMenuData('en', en);
-    await saveMenuData('ko', ko);
-    return new Response(JSON.stringify({ message: 'Menu data updated successfully' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    await Promise.all([saveMenuData('en', en), saveMenuData('ko', ko)]);
+    return NextResponse.json({ message: 'Menu data updated successfully' });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to update menu data' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ error: 'Failed to update menu data' }, { status: 500 });
   }
 }
 
 export async function PATCH(request) {
-  // JWT 검증
   const user = verifyToken(request);
   if (!user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const { action, categoryId, itemIndex, data } = await request.json();
-    const enData = await loadMenuData('en');
-    const koData = await loadMenuData('ko');
+    const [enData, koData] = await Promise.all([loadMenuData('en'), loadMenuData('ko')]);
 
     if (action === 'add') {
-      const enCategoryIndex = enData.categories.findIndex(cat => cat.id === categoryId);
-      const koCategoryIndex = koData.categories.findIndex(cat => cat.id === categoryId);
-      if (enCategoryIndex >= 0 && koCategoryIndex >= 0 && data?.en && data?.ko) {
-        enData.categories[enCategoryIndex].items.push(data.en);
-        koData.categories[koCategoryIndex].items.push(data.ko);
+      const enIdx = enData.categories.findIndex(cat => cat.id === categoryId);
+      const koIdx = koData.categories.findIndex(cat => cat.id === categoryId);
+      if (enIdx >= 0 && koIdx >= 0 && data?.en && data?.ko) {
+        enData.categories[enIdx].items.push(data.en);
+        koData.categories[koIdx].items.push(data.ko);
       }
     } else if (action === 'update') {
-      const enCategoryIndex = enData.categories.findIndex(cat => cat.id === categoryId);
-      const koCategoryIndex = koData.categories.findIndex(cat => cat.id === categoryId);
-      if (enCategoryIndex >= 0 && koCategoryIndex >= 0 && itemIndex >= 0 && data?.en && data?.ko) {
-        enData.categories[enCategoryIndex].items[itemIndex] = {
-          ...enData.categories[enCategoryIndex].items[itemIndex],
+      const enIdx = enData.categories.findIndex(cat => cat.id === categoryId);
+      const koIdx = koData.categories.findIndex(cat => cat.id === categoryId);
+      if (enIdx >= 0 && koIdx >= 0 && itemIndex >= 0 && data?.en && data?.ko) {
+        enData.categories[enIdx].items[itemIndex] = {
+          ...enData.categories[enIdx].items[itemIndex],
           ...data.en,
         };
-        koData.categories[koCategoryIndex].items[itemIndex] = {
-          ...koData.categories[koCategoryIndex].items[itemIndex],
+        koData.categories[koIdx].items[itemIndex] = {
+          ...koData.categories[koIdx].items[itemIndex],
           ...data.ko,
         };
       }
     } else if (action === 'delete') {
-      const enCategoryIndex = enData.categories.findIndex(cat => cat.id === categoryId);
-      const koCategoryIndex = koData.categories.findIndex(cat => cat.id === categoryId);
-      if (enCategoryIndex >= 0 && koCategoryIndex >= 0 && itemIndex >= 0) {
-        const itemToDelete = enData.categories[enCategoryIndex].items[itemIndex];
+      const enIdx = enData.categories.findIndex(cat => cat.id === categoryId);
+      const koIdx = koData.categories.findIndex(cat => cat.id === categoryId);
+      if (enIdx >= 0 && koIdx >= 0 && itemIndex >= 0) {
+        const itemToDelete = enData.categories[enIdx].items[itemIndex];
 
         if (itemToDelete?.image && itemToDelete.image.startsWith('https://')) {
           try {
@@ -184,21 +145,14 @@ export async function PATCH(request) {
           }
         }
 
-        enData.categories[enCategoryIndex].items.splice(itemIndex, 1);
-        koData.categories[koCategoryIndex].items.splice(itemIndex, 1);
+        enData.categories[enIdx].items.splice(itemIndex, 1);
+        koData.categories[koIdx].items.splice(itemIndex, 1);
       }
     }
 
-    await saveMenuData('en', enData);
-    await saveMenuData('ko', koData);
-    return new Response(JSON.stringify({ message: 'Menu data updated successfully' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    await Promise.all([saveMenuData('en', enData), saveMenuData('ko', koData)]);
+    return NextResponse.json({ message: 'Menu data updated successfully' });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to update menu data' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ error: 'Failed to update menu data' }, { status: 500 });
   }
 }

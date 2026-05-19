@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function MenuSection() {
@@ -8,6 +8,7 @@ export default function MenuSection() {
   const [menuData, setMenuData] = useState({ categories: [] });
   const [loading, setLoading] = useState(true);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const lightboxRef = useRef(null);
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -30,41 +31,33 @@ export default function MenuSection() {
     };
 
     fetchMenuData();
-  }, [locale]); // locale 변경 시 다시 fetch
+  }, [locale]);
 
   useEffect(() => {
-    // GLightbox 초기화
-    const initGLightbox = async () => {
-      try {
-        const GLightbox = (await import('glightbox')).default;
-        const lightbox = GLightbox({
-          selector: '.glightbox',
-          touchNavigation: true,
-          loop: true,
-          autoplayVideos: true
-        });
-        
-        // 클린업 함수 반환
-        return () => {
-          if (lightbox && typeof lightbox.destroy === 'function') {
-            lightbox.destroy();
-          }
-        };
-      } catch (error) {
-        console.error('Failed to initialize GLightbox:', error);
-      }
-    };
+    let timeoutId;
 
-    // 메뉴 데이터가 로드된 후에만 GLightbox 초기화
     if (!loading && menuData.categories.length > 0) {
-      // DOM이 완전히 렌더링된 후에 GLightbox 초기화
-      setTimeout(() => {
-        initGLightbox();
+      timeoutId = setTimeout(async () => {
+        // Destroy existing lightbox before creating a new one
+        if (lightboxRef.current) {
+          lightboxRef.current.destroy();
+          lightboxRef.current = null;
+        }
+        try {
+          const GLightbox = (await import('glightbox')).default;
+          lightboxRef.current = GLightbox({
+            selector: '.glightbox',
+            touchNavigation: true,
+            loop: true,
+            autoplayVideos: true,
+          });
+        } catch (error) {
+          console.error('Failed to initialize GLightbox:', error);
+        }
       }, 100);
     }
 
     const handleScroll = () => {
-      // 메뉴 섹션이 화면에 보일 때 버튼 표시
       const menuSection = document.getElementById('menu');
       if (menuSection) {
         const rect = menuSection.getBoundingClientRect();
@@ -75,30 +68,35 @@ export default function MenuSection() {
 
     const handleScrollTopClick = (e) => {
       e.preventDefault();
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // 스크롤 이벤트 리스너 추가
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // 초기 상태 설정
+    handleScroll();
 
-    // 버튼 클릭 이벤트 리스너 추가
     const scrollButton = document.querySelector('.scroll-top-menu');
     if (scrollButton) {
       scrollButton.addEventListener('click', handleScrollTopClick);
     }
 
-    // 클린업
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('scroll', handleScroll);
       if (scrollButton) {
         scrollButton.removeEventListener('click', handleScrollTopClick);
       }
     };
-  }, [loading, menuData]); // loading과 menuData가 변경될 때마다 재실행
+  }, [loading, menuData]);
+
+  // Clean up lightbox on unmount
+  useEffect(() => {
+    return () => {
+      if (lightboxRef.current) {
+        lightboxRef.current.destroy();
+        lightboxRef.current = null;
+      }
+    };
+  }, []);
 
   if (loading) {
     return (

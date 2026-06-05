@@ -1,18 +1,9 @@
-'use client';
-
-import Image from "next/image";
-import styles from "./page.module.css";
 import HeroSection from "../components/HeroSection";
 import AboutSection from "../components/AboutSection";
-import StatsSection from "../components/StatsSection";
 import MenuSection from "../components/MenuSection";
-import EventsSection from "../components/EventsSection";
 import GallerySection from "../components/GallerySection";
 import ContactSection from "../components/ContactSection";
 import LanguageToggle from "../components/LanguageToggle";
-
-// 메뉴 섹션이 실시간 데이터를 사용하므로 동적 렌더링 강제
-export const dynamic = 'force-dynamic';
 
 export default function Home() {
   return (

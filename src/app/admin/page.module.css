@@ -542,6 +542,23 @@
   box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 
+/* Validation */
+.inputError {
+  border-color: #dc2626 !important;
+}
+
+.inputError:focus-within,
+.inputError:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+.fieldError {
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
 .textarea {
   height: 88px;
   resize: vertical;

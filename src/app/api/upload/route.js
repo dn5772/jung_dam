@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { put, del } from '@vercel/blob';
 import jwt from 'jsonwebtoken';
 
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
@@ -51,5 +51,24 @@ export async function POST(request) {
   } catch (error) {
     console.error('File upload error:', error);
     return NextResponse.json({ error: '파일 업로드에 실패했습니다' }, { status: 500 });
+  }
+}
+
+// Delete a previously uploaded blob by its URL — used to clean up images that
+// were replaced or uploaded but never saved (orphans).
+export async function DELETE(request) {
+  if (!verifyToken(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  try {
+    const { url } = await request.json();
+    if (!url || !url.startsWith('https://')) {
+      return NextResponse.json({ error: '유효하지 않은 URL입니다' }, { status: 400 });
+    }
+    await del(url, { token: BLOB_TOKEN });
+    return NextResponse.json({ message: '삭제되었습니다' });
+  } catch (error) {
+    console.error('File delete error:', error);
+    return NextResponse.json({ error: '파일 삭제에 실패했습니다' }, { status: 500 });
   }
 }

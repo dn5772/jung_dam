@@ -362,9 +362,15 @@ export default function AdminPage() {
   const [pendingAction, setPendingAction] = useState(null);
   const [mobileView, setMobileView] = useState('list');
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const statusTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+  // Image-orphan tracking for the current edit session:
+  // uploadsRef = blobs uploaded but not yet persisted; loadedImageRef = the
+  // image already persisted for the item being edited.
+  const uploadsRef = useRef([]);
+  const loadedImageRef = useRef('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -390,9 +396,29 @@ export default function AdminPage() {
     statusTimeoutRef.current = setTimeout(() => setStatus(null), 3500);
   };
 
+  // Best-effort blob deletion (fire-and-forget).
+  const deleteImageBlob = (url) => {
+    if (!url || !url.startsWith('https://')) return;
+    fetch('/api/upload', {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ url }),
+    }).catch(() => {});
+  };
+
+  // Drop any images uploaded this session that were never saved.
+  const discardSessionUploads = () => {
+    uploadsRef.current.forEach(deleteImageBlob);
+    uploadsRef.current = [];
+  };
+
+  const clearFieldError = (field) =>
+    setValidationErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+
   const updateEditingField = (field, value) => {
     setEditingItem((prev) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
+    clearFieldError(field);
   };
 
   const updateEditingLocalizedField = (field, locale, value) => {
@@ -401,6 +427,7 @@ export default function AdminPage() {
       [field]: { ...normalizeLocalizedField(prev?.[field]), [locale]: value },
     }));
     setHasUnsavedChanges(true);
+    clearFieldError(field);
   };
 
   useEffect(() => {
@@ -508,15 +535,18 @@ export default function AdminPage() {
 
   const updateItemOnServer = async (categoryId, itemId, payload) => {
     setPendingAction('update');
+    let ok = false;
     try {
-      const { ok, json } = await patchMenu({ action: 'update', categoryId, itemId, data: payload });
+      const result = await patchMenu({ action: 'update', categoryId, itemId, data: payload });
+      ok = result.ok;
       await refreshMenu();
       if (ok) showStatus('success', '항목이 수정되었습니다.');
-      else showStatus('error', json.error || '항목 수정에 실패했습니다.');
+      else showStatus('error', result.json.error || '항목 수정에 실패했습니다.');
     } catch {
       showStatus('error', '항목 수정에 실패했습니다.');
     }
     setPendingAction(null);
+    return ok;
   };
 
   const deleteItemFromServer = async (categoryId, itemId) => {
@@ -556,7 +586,20 @@ export default function AdminPage() {
     reorderItemsOnServer(currentCategory.id, newOrder);
   };
 
+  // Title (at least one locale) and price are required.
+  const validateItem = (item) => {
+    const errors = {};
+    const koTitle = (item.title?.ko || '').trim();
+    const enTitle = (item.title?.en || '').trim();
+    if (!koTitle && !enTitle) errors.title = '메뉴 이름을 입력하세요 (한국어 또는 영어).';
+    if (!String(item.price ?? '').trim()) errors.price = '가격을 입력하세요.';
+    return errors;
+  };
+
   const addItem = () => {
+    discardSessionUploads();
+    setValidationErrors({});
+    loadedImageRef.current = '';
     const emptyLocalized = SUPPORTED_LOCALES.reduce((acc, l) => { acc[l.id] = ''; return acc; }, {});
     setEditingItem({
       image: '',
@@ -576,6 +619,9 @@ export default function AdminPage() {
     const category = menuData.categories.find((c) => c.id === selectedCategory);
     const item = category?.items.find((it) => it.id === selectedItem);
     if (item) {
+      discardSessionUploads();
+      setValidationErrors({});
+      loadedImageRef.current = item.image || '';
       setEditingItem({
         id: item.id,
         image: item.image || '',
@@ -590,17 +636,36 @@ export default function AdminPage() {
 
   const saveItem = async () => {
     if (!editingItem) { showStatus('info', '편집 중인 항목이 없습니다.'); return; }
+    const errors = validateItem(editingItem);
+    if (Object.keys(errors).length) {
+      setValidationErrors(errors);
+      showStatus('error', '필수 항목을 확인해주세요.');
+      return;
+    }
+    setValidationErrors({});
     const payload = buildItemPayload(editingItem);
+    const previousImage = loadedImageRef.current;
     if (editingItem.isNew) {
       const category = editingItem.category;
       const { ok, newId } = await addItemToServer(category, payload);
+      if (!ok) return;
+      // The uploaded image (if any) is now persisted; stop tracking it.
+      uploadsRef.current = [];
+      loadedImageRef.current = payload.image;
       // Stay in flow: keep the category and select the newly added item by id.
-      if (ok && newId) {
+      if (newId) {
         setSelectedCategory(category);
         setSelectedItem(newId);
       }
     } else {
-      await updateItemOnServer(editingItem.categoryId, editingItem.id, payload);
+      const ok = await updateItemOnServer(editingItem.categoryId, editingItem.id, payload);
+      if (!ok) return;
+      // The image was replaced — delete the old persisted blob.
+      if (previousImage && previousImage !== payload.image) {
+        deleteImageBlob(previousImage);
+      }
+      uploadsRef.current = [];
+      loadedImageRef.current = payload.image;
       // Selection is unchanged, so editingItem already reflects the saved values.
     }
     // Keep the category/item selected; just clear the dirty flag and, on mobile,
@@ -612,16 +677,20 @@ export default function AdminPage() {
   const deleteItem = async () => {
     if (!selectedCategory || !selectedItem) return;
     if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+    discardSessionUploads();
     await deleteItemFromServer(selectedCategory, selectedItem);
     setSelectedItem('');
     setEditingItem(null);
+    setValidationErrors({});
     setHasUnsavedChanges(false);
     setMobileView('list');
   };
 
   const cancelEdit = () => {
+    discardSessionUploads();
     setEditingItem(null);
     setSelectedItem('');
+    setValidationErrors({});
     setHasUnsavedChanges(false);
     setMobileView('list');
   };
@@ -640,6 +709,9 @@ export default function AdminPage() {
       });
       if (res.ok) {
         const data = await res.json();
+        // A previous unsaved upload (if any) is now superseded — delete it.
+        discardSessionUploads();
+        uploadsRef.current = [data.imageUrl];
         setEditingItem((prev) => ({ ...prev, image: data.imageUrl }));
         setHasUnsavedChanges(true);
         showStatus('success', '이미지 업로드 완료');
@@ -702,10 +774,12 @@ export default function AdminPage() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => {
+                    discardSessionUploads();
                     setSelectedCategory(e.target.value);
                     setSelectedItem('');
                     setEditingItem(null);
                     setItemSearch('');
+                    setValidationErrors({});
                     setHasUnsavedChanges(false);
                   }}
                   className={styles.select}
@@ -884,7 +958,7 @@ export default function AdminPage() {
               {/* Price */}
               <div className={styles.formGroup}>
                 <label className={styles.label}>가격</label>
-                <div className={styles.priceInputWrapper}>
+                <div className={`${styles.priceInputWrapper} ${validationErrors.price ? styles.inputError : ''}`}>
                   <span className={styles.pricePrefix}>$</span>
                   <input
                     type="text"
@@ -895,6 +969,7 @@ export default function AdminPage() {
                     placeholder="0.00"
                   />
                 </div>
+                {validationErrors.price && <div className={styles.fieldError}>{validationErrors.price}</div>}
               </div>
 
               {/* Korean */}
@@ -906,9 +981,10 @@ export default function AdminPage() {
                     type="text"
                     value={editingItem.title?.ko || ''}
                     onChange={(e) => updateEditingLocalizedField('title', 'ko', e.target.value)}
-                    className={styles.input}
+                    className={`${styles.input} ${validationErrors.title ? styles.inputError : ''}`}
                     placeholder="메뉴 이름 (한국어)"
                   />
+                  {validationErrors.title && <div className={styles.fieldError}>{validationErrors.title}</div>}
                 </div>
                 <div className={styles.formGroup} style={{ marginBottom: 0 }}>
                   <label className={styles.label}>재료 설명</label>
@@ -930,7 +1006,7 @@ export default function AdminPage() {
                     type="text"
                     value={editingItem.title?.en || ''}
                     onChange={(e) => updateEditingLocalizedField('title', 'en', e.target.value)}
-                    className={styles.input}
+                    className={`${styles.input} ${validationErrors.title ? styles.inputError : ''}`}
                     placeholder="Menu name (English)"
                   />
                 </div>

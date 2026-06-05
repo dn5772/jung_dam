@@ -18,61 +18,6 @@ const normalizeLocalizedField = (value) => {
   return { ko: '', en: '' };
 };
 
-const normalizeMenuData = (data) => {
-  if (!data || !Array.isArray(data.categories)) return { categories: [] };
-  return {
-    ...data,
-    categories: data.categories.map((category) => ({
-      ...category,
-      items: Array.isArray(category.items)
-        ? category.items.map((item) => ({
-            ...item,
-            title: normalizeLocalizedField(item.title),
-            ingredients: normalizeLocalizedField(item.ingredients),
-          }))
-        : [],
-    })),
-  };
-};
-
-const mergeLocalizedMenuData = (enData, koData) => {
-  const enCategories = enData?.categories || [];
-  const koCategories = koData?.categories || [];
-  const koById = new Map(koCategories.map((c) => [c.id, c]));
-  const enById = new Map(enCategories.map((c) => [c.id, c]));
-
-  const orderedIds = [
-    ...enCategories.map((c) => c.id),
-    ...koCategories.filter((c) => !enById.has(c.id)).map((c) => c.id),
-  ];
-
-  const mergedCategories = orderedIds.map((id) => {
-    const enCat = enById.get(id) || {};
-    const koCat = koById.get(id) || {};
-    const enItems = enCat.items || [];
-    const koItems = koCat.items || [];
-    const maxItems = Math.max(enItems.length, koItems.length);
-
-    return {
-      id,
-      name: { en: enCat.name || '', ko: koCat.name || '' },
-      description: { en: enCat.description || '', ko: koCat.description || '' },
-      items: Array.from({ length: maxItems }).map((_, i) => {
-        const enItem = enItems[i] || {};
-        const koItem = koItems[i] || {};
-        return {
-          image: enItem.image || koItem.image || '',
-          title: { en: enItem.title || '', ko: koItem.title || '' },
-          ingredients: { en: enItem.ingredients || '', ko: koItem.ingredients || '' },
-          price: enItem.price || koItem.price || '',
-        };
-      }),
-    };
-  });
-
-  return normalizeMenuData({ categories: mergedCategories });
-};
-
 const getLocalizedValue = (value, locale) => {
   if (!value) return '';
   if (typeof value === 'string') return value;
@@ -211,13 +156,12 @@ export default function AdminPage() {
     'Authorization': `Bearer ${token}`,
   });
 
-  const fetchLocalizedMenuData = async () => {
-    const [enRes, koRes] = await Promise.all([
-      fetch('/api/menu?locale=en', { headers: getAuthHeaders() }),
-      fetch('/api/menu?locale=ko', { headers: getAuthHeaders() }),
-    ]);
-    const [enData, koData] = await Promise.all([enRes.json(), koRes.json()]);
-    return mergeLocalizedMenuData(enData, koData);
+  // Single source of truth: the API returns the unified document directly
+  // (both locales + stable item ids), so no client-side merge is needed.
+  const fetchMenuData = async () => {
+    const res = await fetch('/api/menu?format=full', { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error('Failed to load menu data');
+    return res.json();
   };
 
   const showStatus = (type, message) => {
@@ -241,7 +185,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isLoggedIn && token) {
-      fetchLocalizedMenuData()
+      fetchMenuData()
         .then((data) => { setMenuData(data); setDataLoading(false); })
         .catch(() => {
           showStatus('error', '메뉴 데이터를 불러오지 못했습니다.');
@@ -266,9 +210,10 @@ export default function AdminPage() {
   }, [hasUnsavedChanges]);
 
   useEffect(() => {
-    if (selectedCategory && selectedItem !== '') {
+    if (selectedCategory && selectedItem) {
       editItem();
-    } else {
+    } else if (!editingItem?.isNew) {
+      // Don't clear a freshly opened "new item" form (it has no selection yet).
       setEditingItem(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,101 +224,79 @@ export default function AdminPage() {
   if (dataLoading) return <div className={styles.loginContainer}><p>메뉴 데이터 로딩 중...</p></div>;
 
   const currentCategory = menuData?.categories?.find((c) => c.id === selectedCategory);
-  const filteredItems = currentCategory?.items
-    ?.map((item, index) => ({ item, index }))
-    .filter(({ item }) => {
-      const q = itemSearch.trim().toLowerCase();
-      if (!q) return true;
-      const title = getLocalizedValue(item.title, DEFAULT_LOCALE).toLowerCase();
-      const allTitles = typeof item.title === 'object' ? Object.values(item.title).join(' ').toLowerCase() : '';
-      return `${title} ${allTitles} ${(item.price || '').toLowerCase()}`.includes(q);
-    }) || [];
-
-  const buildLocalizedItemPayload = (item) => ({
-    en: {
-      image: item.image,
-      title: getLocalizedValue(item.title, 'en'),
-      ingredients: getLocalizedValue(item.ingredients, 'en'),
-      price: addDollar(item.price),
-    },
-    ko: {
-      image: item.image,
-      title: getLocalizedValue(item.title, 'ko'),
-      ingredients: getLocalizedValue(item.ingredients, 'ko'),
-      price: addDollar(item.price),
-    },
+  const filteredItems = (currentCategory?.items || []).filter((item) => {
+    const q = itemSearch.trim().toLowerCase();
+    if (!q) return true;
+    const titles = item.title && typeof item.title === 'object'
+      ? Object.values(item.title).join(' ')
+      : (item.title || '');
+    return `${titles} ${item.price || ''}`.toLowerCase().includes(q);
   });
 
-  const addItemToServer = async (itemData) => {
-    setPendingAction('add');
-    const newItem = { image: itemData.image, title: itemData.title, ingredients: itemData.ingredients, price: itemData.price };
-    const updated = { ...menuData };
-    const catIdx = updated.categories.findIndex((c) => c.id === itemData.category);
-    if (catIdx >= 0) { updated.categories[catIdx].items.push(newItem); setMenuData(updated); }
-    let data;
+  // The unified item shape sent to the API (single price, localized text objects).
+  const buildItemPayload = (item) => ({
+    image: item.image || '',
+    price: addDollar(item.price),
+    title: normalizeLocalizedField(item.title),
+    ingredients: normalizeLocalizedField(item.ingredients),
+  });
+
+  // All mutations re-read the unified document afterwards (the API is the single
+  // source of truth) instead of patching local state in place.
+  const patchMenu = async (body) => {
+    const res = await fetch('/api/menu', {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(body),
+    });
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, json };
+  };
+
+  const refreshMenu = async () => {
     try {
-      const res = await fetch('/api/menu', {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ action: 'add', categoryId: itemData.category, data: buildLocalizedItemPayload(newItem) }),
-      });
-      data = await fetchLocalizedMenuData();
-      setMenuData(data);
-      if (res.ok) showStatus('success', '항목이 추가되었습니다.');
-      else showStatus('error', '항목 추가에 실패했습니다.');
+      setMenuData(await fetchMenuData());
     } catch {
-      data = await fetchLocalizedMenuData();
-      setMenuData(data);
+      /* keep current data; the failing action already surfaced an error */
+    }
+  };
+
+  const addItemToServer = async (categoryId, payload) => {
+    setPendingAction('add');
+    let result = { ok: false, newId: null };
+    try {
+      const { ok, json } = await patchMenu({ action: 'add', categoryId, data: payload });
+      await refreshMenu();
+      if (ok) { showStatus('success', '항목이 추가되었습니다.'); result = { ok: true, newId: json.itemId }; }
+      else showStatus('error', json.error || '항목 추가에 실패했습니다.');
+    } catch {
       showStatus('error', '항목 추가에 실패했습니다.');
     }
     setPendingAction(null);
-    return data;
+    return result;
   };
 
-  const updateItemOnServer = async (categoryId, itemIndex, itemData) => {
+  const updateItemOnServer = async (categoryId, itemId, payload) => {
     setPendingAction('update');
-    const updated = { ...menuData };
-    const catIdx = updated.categories.findIndex((c) => c.id === categoryId);
-    if (catIdx >= 0 && itemIndex >= 0) {
-      updated.categories[catIdx].items[itemIndex] = { ...updated.categories[catIdx].items[itemIndex], ...itemData };
-      setMenuData(updated);
-    }
     try {
-      const res = await fetch('/api/menu', {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ action: 'update', categoryId, itemIndex, data: buildLocalizedItemPayload(itemData) }),
-      });
-      const data = await fetchLocalizedMenuData();
-      setMenuData(data);
-      if (res.ok) showStatus('success', '항목이 수정되었습니다.');
-      else showStatus('error', '항목 수정에 실패했습니다.');
+      const { ok, json } = await patchMenu({ action: 'update', categoryId, itemId, data: payload });
+      await refreshMenu();
+      if (ok) showStatus('success', '항목이 수정되었습니다.');
+      else showStatus('error', json.error || '항목 수정에 실패했습니다.');
     } catch {
-      const data = await fetchLocalizedMenuData();
-      setMenuData(data);
       showStatus('error', '항목 수정에 실패했습니다.');
     }
     setPendingAction(null);
   };
 
-  const deleteItemFromServer = async (categoryId, itemIndex) => {
+  const deleteItemFromServer = async (categoryId, itemId) => {
     setPendingAction('delete');
-    const updated = { ...menuData };
-    const catIdx = updated.categories.findIndex((c) => c.id === categoryId);
-    if (catIdx >= 0 && itemIndex >= 0) { updated.categories[catIdx].items.splice(itemIndex, 1); setMenuData(updated); }
     try {
-      const res = await fetch('/api/menu', {
-        method: 'PATCH',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ action: 'delete', categoryId, itemIndex }),
-      });
-      const data = await fetchLocalizedMenuData();
-      setMenuData(data);
-      if (res.ok) showStatus('success', '항목이 삭제되었습니다.');
-      else showStatus('error', '항목 삭제에 실패했습니다.');
+      const { ok, json } = await patchMenu({ action: 'delete', categoryId, itemId });
+      await refreshMenu();
+      if (ok) showStatus('success', '항목이 삭제되었습니다.');
+      else showStatus('error', json.error || '항목 삭제에 실패했습니다.');
     } catch {
-      const data = await fetchLocalizedMenuData();
-      setMenuData(data);
       showStatus('error', '항목 삭제에 실패했습니다.');
     }
     setPendingAction(null);
@@ -395,18 +318,17 @@ export default function AdminPage() {
   };
 
   const editItem = () => {
-    if (!selectedCategory || selectedItem === '' || !menuData) return;
-    const catIndex = menuData.categories.findIndex((c) => c.id === selectedCategory);
-    const itemIndex = parseInt(selectedItem);
-    if (catIndex >= 0 && itemIndex >= 0) {
-      const item = menuData.categories[catIndex].items[itemIndex];
+    if (!selectedCategory || !selectedItem || !menuData) return;
+    const category = menuData.categories.find((c) => c.id === selectedCategory);
+    const item = category?.items.find((it) => it.id === selectedItem);
+    if (item) {
       setEditingItem({
-        ...item,
+        id: item.id,
+        image: item.image || '',
         title: normalizeLocalizedField(item.title),
         ingredients: normalizeLocalizedField(item.ingredients),
         price: stripDollar(item.price),
-        catIndex,
-        itemIndex,
+        categoryId: selectedCategory,
       });
       setHasUnsavedChanges(false);
     }
@@ -414,24 +336,17 @@ export default function AdminPage() {
 
   const saveItem = async () => {
     if (!editingItem) { showStatus('info', '편집 중인 항목이 없습니다.'); return; }
+    const payload = buildItemPayload(editingItem);
     if (editingItem.isNew) {
       const category = editingItem.category;
-      const data = await addItemToServer(editingItem);
-      // Stay in flow: keep the category and select the newly added item.
-      // (Added items are appended, so the new one is last. With #1's stable
-      //  item IDs this becomes "select by id" — only this block changes.)
-      const cat = data?.categories?.find((c) => c.id === category);
-      setSelectedCategory(category);
-      setSelectedItem(cat ? String(cat.items.length - 1) : '');
+      const { ok, newId } = await addItemToServer(category, payload);
+      // Stay in flow: keep the category and select the newly added item by id.
+      if (ok && newId) {
+        setSelectedCategory(category);
+        setSelectedItem(newId);
+      }
     } else {
-      const categoryId = menuData.categories[editingItem.catIndex]?.id;
-      if (!categoryId) { showStatus('error', '카테고리를 찾을 수 없습니다.'); return; }
-      await updateItemOnServer(categoryId, editingItem.itemIndex, {
-        image: editingItem.image,
-        title: editingItem.title,
-        ingredients: editingItem.ingredients,
-        price: editingItem.price,
-      });
+      await updateItemOnServer(editingItem.categoryId, editingItem.id, payload);
       // Selection is unchanged, so editingItem already reflects the saved values.
     }
     // Keep the category/item selected; just clear the dirty flag and, on mobile,
@@ -441,17 +356,13 @@ export default function AdminPage() {
   };
 
   const deleteItem = async () => {
-    if (!selectedCategory || selectedItem === '') return;
+    if (!selectedCategory || !selectedItem) return;
     if (!confirm('이 항목을 삭제하시겠습니까?')) return;
-    const catIndex = menuData.categories.findIndex((c) => c.id === selectedCategory);
-    const itemIndex = parseInt(selectedItem);
-    if (catIndex >= 0 && itemIndex >= 0) {
-      await deleteItemFromServer(selectedCategory, itemIndex);
-      setSelectedItem('');
-      setEditingItem(null);
-      setHasUnsavedChanges(false);
-      setMobileView('list');
-    }
+    await deleteItemFromServer(selectedCategory, selectedItem);
+    setSelectedItem('');
+    setEditingItem(null);
+    setHasUnsavedChanges(false);
+    setMobileView('list');
   };
 
   const cancelEdit = () => {
@@ -549,16 +460,16 @@ export default function AdminPage() {
                     className={styles.searchInput}
                   />
                   <ul className={styles.itemList}>
-                    {filteredItems.map(({ item, index }) => (
-                      <li key={`${index}-${item.image || 'item'}`}>
+                    {filteredItems.map((item) => (
+                      <li key={item.id}>
                         <button
                           type="button"
                           onClick={() => {
-                            setSelectedItem(String(index));
+                            setSelectedItem(item.id);
                             setHasUnsavedChanges(false);
                             setMobileView('edit');
                           }}
-                          className={`${styles.itemButton} ${selectedItem === String(index) ? styles.itemButtonActive : ''}`}
+                          className={`${styles.itemButton} ${selectedItem === item.id ? styles.itemButtonActive : ''}`}
                         >
                           {item.image ? (
                             <img src={item.image} alt="" className={styles.itemThumbnail} />

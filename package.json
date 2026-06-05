@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "migrate": "node scripts/blob/migrate-to-blob.js",
+    "migrate-unify": "node --env-file=.env scripts/blob/unify-menu-data.mjs",
     "check-blob": "node scripts/blob/check-blob-status.js"
   },
   "dependencies": {

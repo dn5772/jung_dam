@@ -1,5 +1,3 @@
-import { Geist, Geist_Mono } from "next/font/google";
-// import { PT_Mono, preconnect_Mono} from 'next/font/google';
 import "./globals.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -12,16 +10,7 @@ import YummyScripts from "../components/YummyScripts";
 import { Roboto, Inter, Amatic_SC } from 'next/font/google';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { Analytics } from "@vercel/analytics/next";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { siteConfig, restaurantJsonLd } from "../lib/siteConfig";
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -43,14 +32,25 @@ const amaticSC = Amatic_SC({
 });
 
 export const metadata = {
-  title: "Jung Dam",
-  description: "Jung Dam Korean Restaurant in Auckland",
+  title: `${siteConfig.name} | ${siteConfig.tagline}`,
+  description: siteConfig.description,
+  openGraph: {
+    title: `${siteConfig.name} | ${siteConfig.tagline}`,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${inter.variable} ${amaticSC.variable}`}>
+      <body className={`${roboto.variable} ${inter.variable} ${amaticSC.variable}`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
+        />
         <LanguageProvider>
           {children}
         </LanguageProvider>

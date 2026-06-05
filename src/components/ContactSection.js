@@ -1,3 +1,5 @@
+import { siteConfig } from '../lib/siteConfig';
+
 export default function ContactSection() {
   return (
     <section id="contact" className="contact section">
@@ -8,8 +10,9 @@ export default function ContactSection() {
       <div className="container" data-aos="fade-up" data-aos-delay="100">
         <div className="mb-5">
           <iframe
+            title={`${siteConfig.name} location map`}
             style={{ width: "100%", height: "400px" }}
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d25569.624427299554!2d174.7255296!3d-36.765696!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d399a1e237b75%3A0xbc883ebee83bbb6b!2z7KCV64u0IEp1bmcgRGFtIGtvcmVhbiByZXN0YXVyYW50!5e0!3m2!1sen!2snz!4v1768595330134!5m2!1sen!2snz"
+            src={siteConfig.mapEmbedSrc}
             frameBorder="0"
             allowFullScreen=""
           ></iframe>
@@ -20,7 +23,7 @@ export default function ContactSection() {
               <i className="icon bi bi-geo-alt flex-shrink-0"></i>
               <div>
                 <h3>Address</h3>
-                <p>20a Link Drive, Wairau Valley, Auckland 0627</p>
+                <p>{siteConfig.address.full}</p>
               </div>
             </div>
           </div>
@@ -29,7 +32,7 @@ export default function ContactSection() {
               <i className="icon bi bi-telephone flex-shrink-0"></i>
               <div>
                 <h3>Call Us</h3>
-                <p>09 441 7080</p>
+                <p><a href={siteConfig.phoneHref}>{siteConfig.phone}</a></p>
               </div>
             </div>
           </div>
@@ -38,7 +41,7 @@ export default function ContactSection() {
               <i className="icon bi bi-envelope flex-shrink-0"></i>
               <div>
                 <h3>Email Us</h3>
-                <p>jungdam534@gmail.com</p>
+                <p><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></p>
               </div>
             </div>
           </div>
@@ -48,8 +51,9 @@ export default function ContactSection() {
               <div>
                 <h3>Open Hours</h3>
                 <p>
-                  <strong>Mon-Sat:</strong> 11:30AM - 9PM<br />
-                  <strong>Break Time:</strong> 3PM - 5PM<br />
+                  {siteConfig.hours.map((h) => (
+                    <span key={h.label}><strong>{h.label}:</strong> {h.value}<br /></span>
+                  ))}
                 </p>
               </div>
             </div>

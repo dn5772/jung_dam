@@ -4,6 +4,7 @@ import MenuSection from "../components/MenuSection";
 import GallerySection from "../components/GallerySection";
 import ContactSection from "../components/ContactSection";
 import LanguageToggle from "../components/LanguageToggle";
+import { siteConfig } from "../lib/siteConfig";
 
 export default function Home() {
   return (
@@ -40,7 +41,7 @@ export default function Home() {
           </nav>
           <div className="header-actions d-flex align-items-center gap-3">
             <LanguageToggle />
-            <a className="btn-getstarted" href="tel:+6494417080">Book a Table</a>
+            <a className="btn-getstarted" href={siteConfig.phoneHref}>Book a Table</a>
           </div>
         </div>
       </header>
@@ -62,8 +63,8 @@ export default function Home() {
               <i className="bi bi-geo-alt icon"></i>
               <div className="address">
                 <h4>Address</h4>
-                <p>20a Link Drive</p>
-                <p>Wairau Valley, Auckland 0627</p>
+                <p>{siteConfig.address.street}</p>
+                <p>{siteConfig.address.region}</p>
                 <p></p>
               </div>
             </div>
@@ -72,8 +73,8 @@ export default function Home() {
               <div>
                 <h4>Contact</h4>
                 <p>
-                  <strong>Phone:</strong> <span>+64 9 441 7080</span><br />
-                  <strong>Email:</strong> <span>jungdam534@gmail.com</span><br />
+                  <strong>Phone:</strong> <span>{siteConfig.phone}</span><br />
+                  <strong>Email:</strong> <span>{siteConfig.email}</span><br />
                 </p>
               </div>
             </div>
@@ -82,9 +83,9 @@ export default function Home() {
               <div>
                 <h4>Opening Hours</h4>
                 <p>
-                  <strong>Mon-Sat:</strong> <span>11:30 AM - 9 PM</span><br />
-                  <strong>Break Time:</strong> <span>3 PM - 5 PM</span><br />
-                  <strong>Sunday</strong>: <span>Closed</span>
+                  {siteConfig.hours.map((h) => (
+                    <span key={h.label}><strong>{h.label}:</strong> <span>{h.value}</span><br /></span>
+                  ))}
                 </p>
               </div>
             </div>

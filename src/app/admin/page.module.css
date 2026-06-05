@@ -425,6 +425,41 @@
   color: #111827;
 }
 
+/* Unsaved-changes indicator (replaces the old confirm() prompts) */
+.dirtyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  padding: 4px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.dirtyDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  flex-shrink: 0;
+}
+
+.mobileHeaderTitle .dirtyDot {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+@media (max-width: 899px) {
+  /* The mobile panel header already shows the title + dirty dot. */
+  .formHeader { display: none; }
+}
+
 .formGroup { margin-bottom: 16px; }
 
 .label {

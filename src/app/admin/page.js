@@ -226,11 +226,6 @@ export default function AdminPage() {
     statusTimeoutRef.current = setTimeout(() => setStatus(null), 3500);
   };
 
-  const confirmDiscardChanges = () => {
-    if (!hasUnsavedChanges) return true;
-    return confirm('저장하지 않은 변경사항이 있습니다. 계속할까요?');
-  };
-
   const updateEditingField = (field, value) => {
     setEditingItem((prev) => ({ ...prev, [field]: value }));
     setHasUnsavedChanges(true);
@@ -260,6 +255,15 @@ export default function AdminPage() {
   useEffect(() => () => {
     if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
   }, []);
+
+  // Guard against losing unsaved edits on tab close / refresh.
+  // In-app navigation no longer blocks with confirm(); the dirty badge is the cue.
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handler = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     if (selectedCategory && selectedItem !== '') {
@@ -306,22 +310,24 @@ export default function AdminPage() {
     const updated = { ...menuData };
     const catIdx = updated.categories.findIndex((c) => c.id === itemData.category);
     if (catIdx >= 0) { updated.categories[catIdx].items.push(newItem); setMenuData(updated); }
+    let data;
     try {
       const res = await fetch('/api/menu', {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({ action: 'add', categoryId: itemData.category, data: buildLocalizedItemPayload(newItem) }),
       });
-      const data = await fetchLocalizedMenuData();
+      data = await fetchLocalizedMenuData();
       setMenuData(data);
       if (res.ok) showStatus('success', '항목이 추가되었습니다.');
       else showStatus('error', '항목 추가에 실패했습니다.');
     } catch {
-      const data = await fetchLocalizedMenuData();
+      data = await fetchLocalizedMenuData();
       setMenuData(data);
       showStatus('error', '항목 추가에 실패했습니다.');
     }
     setPendingAction(null);
+    return data;
   };
 
   const updateItemOnServer = async (categoryId, itemIndex, itemData) => {
@@ -374,7 +380,6 @@ export default function AdminPage() {
   };
 
   const addItem = () => {
-    if (!confirmDiscardChanges()) return;
     const emptyLocalized = SUPPORTED_LOCALES.reduce((acc, l) => { acc[l.id] = ''; return acc; }, {});
     setEditingItem({
       image: '',
@@ -410,7 +415,14 @@ export default function AdminPage() {
   const saveItem = async () => {
     if (!editingItem) { showStatus('info', '편집 중인 항목이 없습니다.'); return; }
     if (editingItem.isNew) {
-      await addItemToServer(editingItem);
+      const category = editingItem.category;
+      const data = await addItemToServer(editingItem);
+      // Stay in flow: keep the category and select the newly added item.
+      // (Added items are appended, so the new one is last. With #1's stable
+      //  item IDs this becomes "select by id" — only this block changes.)
+      const cat = data?.categories?.find((c) => c.id === category);
+      setSelectedCategory(category);
+      setSelectedItem(cat ? String(cat.items.length - 1) : '');
     } else {
       const categoryId = menuData.categories[editingItem.catIndex]?.id;
       if (!categoryId) { showStatus('error', '카테고리를 찾을 수 없습니다.'); return; }
@@ -420,10 +432,10 @@ export default function AdminPage() {
         ingredients: editingItem.ingredients,
         price: editingItem.price,
       });
+      // Selection is unchanged, so editingItem already reflects the saved values.
     }
-    setEditingItem(null);
-    setSelectedCategory('');
-    setSelectedItem('');
+    // Keep the category/item selected; just clear the dirty flag and, on mobile,
+    // slide back to the list so the next item is one tap away.
     setHasUnsavedChanges(false);
     setMobileView('list');
   };
@@ -443,7 +455,6 @@ export default function AdminPage() {
   };
 
   const cancelEdit = () => {
-    if (!confirmDiscardChanges()) return;
     setEditingItem(null);
     setSelectedItem('');
     setHasUnsavedChanges(false);
@@ -507,7 +518,6 @@ export default function AdminPage() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => {
-                    if (!confirmDiscardChanges()) return;
                     setSelectedCategory(e.target.value);
                     setSelectedItem('');
                     setEditingItem(null);
@@ -544,7 +554,6 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            if (!confirmDiscardChanges()) return;
                             setSelectedItem(String(index));
                             setHasUnsavedChanges(false);
                             setMobileView('edit');
@@ -592,6 +601,7 @@ export default function AdminPage() {
               ← 목록
             </button>
             <span className={styles.mobileHeaderTitle}>
+              {hasUnsavedChanges && <span className={styles.dirtyDot} aria-label="저장되지 않음" />}
               {editingItem?.isNew
                 ? '새 항목 추가'
                 : (getLocalizedValue(editingItem?.title, DEFAULT_LOCALE) || '항목 편집')}
@@ -609,6 +619,19 @@ export default function AdminPage() {
 
           {editingItem ? (
             <div className={styles.editForm}>
+              <div className={styles.formHeader}>
+                <h2 className={styles.formTitle} style={{ margin: 0 }}>
+                  {editingItem.isNew
+                    ? '새 항목 추가'
+                    : (getLocalizedValue(editingItem.title, DEFAULT_LOCALE) || '항목 편집')}
+                </h2>
+                {hasUnsavedChanges && (
+                  <span className={styles.dirtyBadge}>
+                    <span className={styles.dirtyDot} />저장되지 않음
+                  </span>
+                )}
+              </div>
+
               {editingItem.isNew && (
                 <div className={styles.formGroup}>
                   <label className={styles.label}>카테고리</label>

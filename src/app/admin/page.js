@@ -1,6 +1,22 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import styles from './page.module.css';
 
 const DEFAULT_LOCALE = 'ko';
@@ -131,6 +147,204 @@ const LoginForm = ({ onLogin }) => {
   );
 };
 
+/* ─── Sortable list row (shared drag-handle wrapper) ─── */
+
+const SortableRow = ({ id, disabled, className, handleClassName, handleLabel, children }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+    zIndex: isDragging ? 2 : undefined,
+  };
+  return (
+    <li ref={setNodeRef} style={style} className={className}>
+      {!disabled && (
+        <button
+          type="button"
+          className={handleClassName}
+          aria-label={handleLabel}
+          {...attributes}
+          {...listeners}
+        >
+          <i className="bi bi-grip-vertical" />
+        </button>
+      )}
+      {children}
+    </li>
+  );
+};
+
+/* ─── Category manager (add / rename / delete / reorder) ─── */
+
+const toCategoryDraft = (c) => ({
+  id: c.id,
+  name: normalizeLocalizedField(c.name),
+  description: normalizeLocalizedField(c.description),
+});
+
+const CategoryManager = ({ categories, patchMenu, refreshMenu, showStatus, onClose }) => {
+  const [draft, setDraft] = useState(() => categories.map(toCategoryDraft));
+  const [newName, setNewName] = useState({ ko: '', en: '' });
+  const [busy, setBusy] = useState(false);
+
+  const idKey = categories.map((c) => c.id).join(',');
+  useEffect(() => {
+    // Re-sync when the set/order of categories changes (add/delete/reorder),
+    // but keep in-progress name edits while ids are unchanged.
+    setDraft(categories.map(toCategoryDraft));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idKey]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const setField = (id, field, locale, value) =>
+    setDraft((d) => d.map((c) => (c.id === id ? { ...c, [field]: { ...c[field], [locale]: value } } : c)));
+
+  const rowIsDirty = (row) => {
+    const orig = categories.find((c) => c.id === row.id);
+    return !orig || JSON.stringify(toCategoryDraft(orig)) !== JSON.stringify(row);
+  };
+
+  const persistRow = async (row) => {
+    if (!rowIsDirty(row)) return;
+    const { ok, json } = await patchMenu({
+      action: 'updateCategory',
+      categoryId: row.id,
+      data: { name: row.name, description: row.description },
+    });
+    if (ok) { showStatus('success', '카테고리가 저장되었습니다.'); refreshMenu(); }
+    else showStatus('error', json.error || '카테고리 저장에 실패했습니다.');
+  };
+
+  const addCategory = async () => {
+    if (!newName.ko.trim() && !newName.en.trim()) {
+      showStatus('info', '카테고리 이름을 입력하세요.');
+      return;
+    }
+    setBusy(true);
+    const { ok, json } = await patchMenu({
+      action: 'addCategory',
+      data: { name: newName, description: { ko: '', en: '' } },
+    });
+    if (ok) { showStatus('success', '카테고리가 추가되었습니다.'); setNewName({ ko: '', en: '' }); await refreshMenu(); }
+    else showStatus('error', json.error || '카테고리 추가에 실패했습니다.');
+    setBusy(false);
+  };
+
+  const deleteCategory = async (id) => {
+    if (!confirm('이 카테고리와 그 안의 모든 항목이 삭제됩니다. 계속할까요?')) return;
+    setBusy(true);
+    const { ok, json } = await patchMenu({ action: 'deleteCategory', categoryId: id });
+    if (ok) { showStatus('success', '카테고리가 삭제되었습니다.'); await refreshMenu(); }
+    else showStatus('error', json.error || '카테고리 삭제에 실패했습니다.');
+    setBusy(false);
+  };
+
+  const handleDragEnd = async ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    const ids = draft.map((c) => c.id);
+    const newOrder = arrayMove(ids, ids.indexOf(active.id), ids.indexOf(over.id));
+    setDraft((d) => newOrder.map((id) => d.find((c) => c.id === id)));
+    const { ok, json } = await patchMenu({ action: 'reorderCategories', data: { order: newOrder } });
+    if (ok) refreshMenu();
+    else { showStatus('error', json.error || '순서 변경에 실패했습니다.'); refreshMenu(); }
+  };
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalPanel} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h2 className={styles.modalTitle}>카테고리 관리</h2>
+          <button className={styles.modalClose} onClick={onClose} aria-label="닫기">✕</button>
+        </div>
+
+        <div className={styles.modalBody}>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={draft.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+              <ul className={styles.categoryManagerList}>
+                {draft.map((cat) => (
+                  <SortableRow
+                    key={cat.id}
+                    id={cat.id}
+                    className={styles.categoryCard}
+                    handleClassName={styles.dragHandle}
+                    handleLabel="카테고리 순서 변경"
+                  >
+                    <div className={styles.categoryCardFields}>
+                      <input
+                        className={styles.input}
+                        value={cat.name.ko}
+                        onChange={(e) => setField(cat.id, 'name', 'ko', e.target.value)}
+                        onBlur={() => persistRow(cat)}
+                        placeholder="이름 (한국어)"
+                      />
+                      <input
+                        className={styles.input}
+                        value={cat.name.en}
+                        onChange={(e) => setField(cat.id, 'name', 'en', e.target.value)}
+                        onBlur={() => persistRow(cat)}
+                        placeholder="Name (English)"
+                      />
+                      <input
+                        className={styles.input}
+                        value={cat.description.ko}
+                        onChange={(e) => setField(cat.id, 'description', 'ko', e.target.value)}
+                        onBlur={() => persistRow(cat)}
+                        placeholder="설명 (한국어, 선택)"
+                      />
+                      <input
+                        className={styles.input}
+                        value={cat.description.en}
+                        onChange={(e) => setField(cat.id, 'description', 'en', e.target.value)}
+                        onBlur={() => persistRow(cat)}
+                        placeholder="Description (English, optional)"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.deleteButton}
+                      onClick={() => deleteCategory(cat.id)}
+                      disabled={busy}
+                    >
+                      삭제
+                    </button>
+                  </SortableRow>
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
+
+          {draft.length === 0 && (
+            <div className={styles.emptyList}>카테고리가 없습니다. 아래에서 추가하세요.</div>
+          )}
+
+          <div className={styles.categoryAddRow}>
+            <input
+              className={styles.input}
+              value={newName.ko}
+              onChange={(e) => setNewName((n) => ({ ...n, ko: e.target.value }))}
+              placeholder="새 카테고리 (한국어)"
+            />
+            <input
+              className={styles.input}
+              value={newName.en}
+              onChange={(e) => setNewName((n) => ({ ...n, en: e.target.value }))}
+              placeholder="New category (English)"
+            />
+            <button className={styles.addButton} onClick={addCategory} disabled={busy}>
+              + 추가
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 /* ─── AdminPage ─── */
 
 export default function AdminPage() {
@@ -147,9 +361,15 @@ export default function AdminPage() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
   const [mobileView, setMobileView] = useState('list');
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   const statusTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
@@ -218,6 +438,16 @@ export default function AdminPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedItem]);
+
+  // If the selected category disappears (e.g. deleted in the category manager),
+  // drop the stale selection so the list/editor don't point at nothing.
+  useEffect(() => {
+    if (selectedCategory && !menuData.categories.some((c) => c.id === selectedCategory)) {
+      setSelectedCategory('');
+      setSelectedItem('');
+      setEditingItem(null);
+    }
+  }, [menuData, selectedCategory]);
 
   if (isLoading) return <div className={styles.loginContainer}><p>로딩 중...</p></div>;
   if (!isLoggedIn) return <LoginForm onLogin={login} />;
@@ -300,6 +530,30 @@ export default function AdminPage() {
       showStatus('error', '항목 삭제에 실패했습니다.');
     }
     setPendingAction(null);
+  };
+
+  const reorderItemsOnServer = async (categoryId, order) => {
+    const { ok, json } = await patchMenu({ action: 'reorderItems', categoryId, data: { order } });
+    if (!ok) { showStatus('error', json.error || '순서 변경에 실패했습니다.'); await refreshMenu(); }
+  };
+
+  // Drag-reorder within the currently selected category (disabled while searching).
+  const handleItemDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id || !currentCategory) return;
+    const ids = currentCategory.items.map((it) => it.id);
+    const oldIndex = ids.indexOf(active.id);
+    const newIndex = ids.indexOf(over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    const newOrder = arrayMove(ids, oldIndex, newIndex);
+    // Optimistic local reorder, then persist.
+    setMenuData((prev) => ({
+      categories: prev.categories.map((c) =>
+        c.id === currentCategory.id
+          ? { ...c, items: newOrder.map((id) => c.items.find((it) => it.id === id)) }
+          : c,
+      ),
+    }));
+    reorderItemsOnServer(currentCategory.id, newOrder);
   };
 
   const addItem = () => {
@@ -408,6 +662,16 @@ export default function AdminPage() {
         </div>
       )}
 
+      {showCategoryManager && (
+        <CategoryManager
+          categories={menuData?.categories || []}
+          patchMenu={patchMenu}
+          refreshMenu={refreshMenu}
+          showStatus={showStatus}
+          onClose={() => setShowCategoryManager(false)}
+        />
+      )}
+
       <div className={`${styles.slideWrapper} ${mobileView === 'edit' ? styles.slideWrapperEdit : ''}`}>
 
         {/* ── LEFT PANEL: 목록 ── */}
@@ -425,7 +689,16 @@ export default function AdminPage() {
           <div className={styles.listContent}>
             <div className={styles.selectionGroup}>
               <div className={styles.dropdownGroup}>
-                <label className={styles.label}>카테고리</label>
+                <div className={styles.dropdownLabelRow}>
+                  <label className={styles.label}>카테고리</label>
+                  <button
+                    type="button"
+                    className={styles.manageButton}
+                    onClick={() => setShowCategoryManager(true)}
+                  >
+                    <i className="bi bi-gear" /> 관리
+                  </button>
+                </div>
                 <select
                   value={selectedCategory}
                   onChange={(e) => {
@@ -459,33 +732,44 @@ export default function AdminPage() {
                     placeholder="이름 또는 가격 검색"
                     className={styles.searchInput}
                   />
-                  <ul className={styles.itemList}>
-                    {filteredItems.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedItem(item.id);
-                            setHasUnsavedChanges(false);
-                            setMobileView('edit');
-                          }}
-                          className={`${styles.itemButton} ${selectedItem === item.id ? styles.itemButtonActive : ''}`}
-                        >
-                          {item.image ? (
-                            <img src={item.image} alt="" className={styles.itemThumbnail} />
-                          ) : (
-                            <div className={styles.itemThumbnailPlaceholder}>
-                              <i className="bi bi-image"></i>
-                            </div>
-                          )}
-                          <div className={styles.itemTitle}>
-                            {getLocalizedValue(item.title, DEFAULT_LOCALE) || '제목 없음'}
-                          </div>
-                          <div className={styles.itemMeta}>{item.price || '-'}</div>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleItemDragEnd}>
+                    <SortableContext items={filteredItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+                      <ul className={styles.itemList}>
+                        {filteredItems.map((item) => (
+                          <SortableRow
+                            key={item.id}
+                            id={item.id}
+                            disabled={!!itemSearch.trim()}
+                            className={styles.sortableItemRow}
+                            handleClassName={styles.dragHandle}
+                            handleLabel="항목 순서 변경"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedItem(item.id);
+                                setHasUnsavedChanges(false);
+                                setMobileView('edit');
+                              }}
+                              className={`${styles.itemButton} ${selectedItem === item.id ? styles.itemButtonActive : ''}`}
+                            >
+                              {item.image ? (
+                                <img src={item.image} alt="" className={styles.itemThumbnail} />
+                              ) : (
+                                <div className={styles.itemThumbnailPlaceholder}>
+                                  <i className="bi bi-image"></i>
+                                </div>
+                              )}
+                              <div className={styles.itemTitle}>
+                                {getLocalizedValue(item.title, DEFAULT_LOCALE) || '제목 없음'}
+                              </div>
+                              <div className={styles.itemMeta}>{item.price || '-'}</div>
+                            </button>
+                          </SortableRow>
+                        ))}
+                      </ul>
+                    </SortableContext>
+                  </DndContext>
                   {filteredItems.length === 0 && (
                     <div className={styles.emptyList}>항목이 없습니다.</div>
                   )}

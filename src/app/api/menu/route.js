@@ -205,7 +205,7 @@ export async function POST(request) {
   }
 }
 
-// Single-item operations, addressed by stable category/item ids.
+// Single category/item operations, addressed by stable ids.
 export async function PATCH(request) {
   if (!verifyToken(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -214,51 +214,123 @@ export async function PATCH(request) {
   try {
     const { action, categoryId, itemId, data } = await request.json();
     const menu = await loadUnifiedData();
-    const category = menu.categories.find((c) => c.id === categoryId);
-    if (!category) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
-    }
+    const findCategory = (id) => menu.categories.find((c) => c.id === id);
+    const notFound = (what) => NextResponse.json({ error: `${what} not found` }, { status: 404 });
 
-    if (action === 'add') {
-      const newItem = {
-        id: randomUUID(),
-        image: data?.image || '',
-        price: data?.price || '',
-        title: toLocalized(data?.title),
-        ingredients: toLocalized(data?.ingredients),
-      };
-      category.items.push(newItem);
-      await saveUnifiedData(menu);
-      return NextResponse.json({ message: 'Item added', itemId: newItem.id });
-    }
+    // Reorder a list of {id} objects to match the given id order; any ids not
+    // listed are appended in their existing order (defensive).
+    const reorderById = (list, order) => {
+      const safeOrder = Array.isArray(order) ? order : [];
+      const byId = new Map(list.map((el) => [el.id, el]));
+      const result = safeOrder.map((id) => byId.get(id)).filter(Boolean);
+      for (const el of list) if (!safeOrder.includes(el.id)) result.push(el);
+      return result;
+    };
 
-    if (action === 'update') {
-      const item = category.items.find((it) => it.id === itemId);
-      if (!item) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-      if (data?.image !== undefined) item.image = data.image;
-      if (data?.price !== undefined) item.price = data.price;
-      if (data?.title !== undefined) item.title = toLocalized(data.title);
-      if (data?.ingredients !== undefined) item.ingredients = toLocalized(data.ingredients);
-      await saveUnifiedData(menu);
-      return NextResponse.json({ message: 'Item updated' });
-    }
-
-    if (action === 'delete') {
-      const index = category.items.findIndex((it) => it.id === itemId);
-      if (index < 0) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-      const [removed] = category.items.splice(index, 1);
-      if (removed?.image && removed.image.startsWith('https://')) {
-        try {
-          await del(removed.image, { token: BLOB_TOKEN });
-        } catch (error) {
-          console.error('Vercel Blob 이미지 파일 삭제 실패:', error);
-        }
+    switch (action) {
+      /* ── item actions ── */
+      case 'add': {
+        const category = findCategory(categoryId);
+        if (!category) return notFound('Category');
+        const newItem = {
+          id: randomUUID(),
+          image: data?.image || '',
+          price: data?.price || '',
+          title: toLocalized(data?.title),
+          ingredients: toLocalized(data?.ingredients),
+        };
+        category.items.push(newItem);
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Item added', itemId: newItem.id });
       }
-      await saveUnifiedData(menu);
-      return NextResponse.json({ message: 'Item deleted' });
-    }
 
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+      case 'update': {
+        const category = findCategory(categoryId);
+        if (!category) return notFound('Category');
+        const item = category.items.find((it) => it.id === itemId);
+        if (!item) return notFound('Item');
+        if (data?.image !== undefined) item.image = data.image;
+        if (data?.price !== undefined) item.price = data.price;
+        if (data?.title !== undefined) item.title = toLocalized(data.title);
+        if (data?.ingredients !== undefined) item.ingredients = toLocalized(data.ingredients);
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Item updated' });
+      }
+
+      case 'delete': {
+        const category = findCategory(categoryId);
+        if (!category) return notFound('Category');
+        const index = category.items.findIndex((it) => it.id === itemId);
+        if (index < 0) return notFound('Item');
+        const [removed] = category.items.splice(index, 1);
+        if (removed?.image && removed.image.startsWith('https://')) {
+          try {
+            await del(removed.image, { token: BLOB_TOKEN });
+          } catch (error) {
+            console.error('Vercel Blob 이미지 파일 삭제 실패:', error);
+          }
+        }
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Item deleted' });
+      }
+
+      case 'reorderItems': {
+        const category = findCategory(categoryId);
+        if (!category) return notFound('Category');
+        category.items = reorderById(category.items, data?.order);
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Items reordered' });
+      }
+
+      /* ── category actions ── */
+      case 'addCategory': {
+        const newCategory = {
+          id: randomUUID(),
+          name: toLocalized(data?.name),
+          description: toLocalized(data?.description),
+          items: [],
+        };
+        menu.categories.push(newCategory);
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Category added', categoryId: newCategory.id });
+      }
+
+      case 'updateCategory': {
+        const category = findCategory(categoryId);
+        if (!category) return notFound('Category');
+        if (data?.name !== undefined) category.name = toLocalized(data.name);
+        if (data?.description !== undefined) category.description = toLocalized(data.description);
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Category updated' });
+      }
+
+      case 'deleteCategory': {
+        const index = menu.categories.findIndex((c) => c.id === categoryId);
+        if (index < 0) return notFound('Category');
+        const [removed] = menu.categories.splice(index, 1);
+        const urls = (removed.items || [])
+          .map((it) => it.image)
+          .filter((u) => u && u.startsWith('https://'));
+        if (urls.length) {
+          try {
+            await del(urls, { token: BLOB_TOKEN });
+          } catch (error) {
+            console.error('Vercel Blob 이미지 파일 삭제 실패:', error);
+          }
+        }
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Category deleted' });
+      }
+
+      case 'reorderCategories': {
+        menu.categories = reorderById(menu.categories, data?.order);
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Categories reordered' });
+      }
+
+      default:
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    }
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update menu data' }, { status: 500 });
   }

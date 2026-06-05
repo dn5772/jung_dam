@@ -68,7 +68,10 @@ export default function MenuSection() {
 
     const handleScrollTopClick = (e) => {
       e.preventDefault();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const target = document.getElementById('menu');
+      if (target) {
+        window.scrollTo({ top: target.offsetTop, behavior: 'smooth' });
+      }
     };
 
     window.addEventListener('scroll', handleScroll);

@@ -34,10 +34,26 @@ const toLocalized = (value) => ({
   ko: pickLocale(value, 'ko'),
 });
 
-// Guarantee every category/item has the unified shape (and a stable id).
+const DEFAULT_CURRENCY = '$';
+
+// Prices are stored bare (no symbol). Strip a leading currency symbol from any
+// legacy value so e.g. "$12.00" becomes "12.00" while "시가"/"Market" survive.
+const stripCurrency = (price) => String(price || '').replace(/^\s*[$₩€£¥]\s*/, '').trim();
+
+// Render a bare price for display: numeric values get the currency symbol
+// prefixed; non-numeric literals (e.g. "시가") are shown as-is.
+const formatPrice = (price, currency) => {
+  const s = stripCurrency(price);
+  if (!s) return '';
+  return /^[\d]/.test(s) ? `${currency}${s}` : s;
+};
+
+// Guarantee the unified shape (stable ids, localized fields, bare prices,
+// a currency setting).
 const ensureShape = (data) => {
   const categories = Array.isArray(data?.categories) ? data.categories : [];
   return {
+    currency: (typeof data?.currency === 'string' && data.currency) ? data.currency : DEFAULT_CURRENCY,
     categories: categories.map((category) => ({
       id: category.id,
       name: toLocalized(category.name),
@@ -45,7 +61,7 @@ const ensureShape = (data) => {
       items: (Array.isArray(category.items) ? category.items : []).map((item, index) => ({
         id: item.id || `${category.id}__${index}`,
         image: item.image || '',
-        price: item.price || '',
+        price: stripCurrency(item.price),
         title: toLocalized(item.title),
         ingredients: toLocalized(item.ingredients),
       })),
@@ -54,8 +70,10 @@ const ensureShape = (data) => {
 };
 
 // Project the unified data down to the flat, single-locale shape the public
-// site (MenuSection) consumes: localized fields collapse to plain strings.
+// site (MenuSection) consumes: localized fields collapse to plain strings and
+// the price is rendered with the configured currency symbol.
 const projectLocale = (data, locale) => ({
+  currency: data.currency,
   categories: data.categories.map((category) => ({
     id: category.id,
     name: pickLocale(category.name, locale),
@@ -65,7 +83,7 @@ const projectLocale = (data, locale) => ({
       image: item.image || '',
       title: pickLocale(item.title, locale),
       ingredients: pickLocale(item.ingredients, locale),
-      price: item.price || '',
+      price: formatPrice(item.price, data.currency),
     })),
   })),
 });
@@ -326,6 +344,15 @@ export async function PATCH(request) {
         menu.categories = reorderById(menu.categories, data?.order);
         await saveUnifiedData(menu);
         return NextResponse.json({ message: 'Categories reordered' });
+      }
+
+      /* ── document settings ── */
+      case 'updateSettings': {
+        if (typeof data?.currency === 'string') {
+          menu.currency = data.currency.trim() || DEFAULT_CURRENCY;
+        }
+        await saveUnifiedData(menu);
+        return NextResponse.json({ message: 'Settings updated' });
       }
 
       default:

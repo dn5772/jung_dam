@@ -43,35 +43,72 @@ const getLocalizedValue = (value, locale) => {
   return '';
 };
 
-const stripDollar = (price) => (price || '').replace(/^\$\s*/, '');
-const addDollar = (price) => {
-  const s = stripDollar(price);
-  return s ? `$${s}` : '';
+const DEFAULT_CURRENCY = '$';
+const MAX_IMAGE_BYTES = 4.5 * 1024 * 1024;
+
+// Prices are stored bare; strip any leading currency symbol for editing.
+const stripCurrency = (price) => String(price || '').replace(/^\s*[$₩€£¥]\s*/, '').trim();
+
+// Display a bare price with the configured currency symbol (numeric only).
+const formatPrice = (price, currency = DEFAULT_CURRENCY) => {
+  const s = stripCurrency(price);
+  if (!s) return '';
+  return /^[\d]/.test(s) ? `${currency}${s}` : s;
 };
 
 /* ─── useAuth hook ─── */
+
+const getTokenExp = (token) => {
+  try {
+    return JSON.parse(atob(token.split('.')[1])).exp; // seconds
+  } catch {
+    return 0;
+  }
+};
 
 const useAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const expiryTimerRef = useRef(null);
+
+  const clearExpiryTimer = () => {
+    if (expiryTimerRef.current) { clearTimeout(expiryTimerRef.current); expiryTimerRef.current = null; }
+  };
+
+  // Mark the session expired: drop the token and surface the re-login prompt.
+  const expireSession = () => {
+    clearExpiryTimer();
+    localStorage.removeItem('adminToken');
+    setToken(null);
+    setIsLoggedIn(false);
+    setSessionExpired(true);
+  };
+
+  // Proactively expire exactly when the JWT lapses (capped to avoid overflow).
+  const scheduleExpiry = (tok) => {
+    clearExpiryTimer();
+    const exp = getTokenExp(tok);
+    const msUntil = exp * 1000 - Date.now();
+    if (msUntil <= 0) { expireSession(); return; }
+    expiryTimerRef.current = setTimeout(expireSession, Math.min(msUntil, 2 ** 31 - 1));
+  };
 
   useEffect(() => {
     const storedToken = localStorage.getItem('adminToken');
     if (storedToken) {
-      try {
-        const payload = JSON.parse(atob(storedToken.split('.')[1]));
-        if (payload.exp > Date.now() / 1000) {
-          setToken(storedToken);
-          setIsLoggedIn(true);
-        } else {
-          localStorage.removeItem('adminToken');
-        }
-      } catch {
+      if (getTokenExp(storedToken) > Date.now() / 1000) {
+        setToken(storedToken);
+        setIsLoggedIn(true);
+        scheduleExpiry(storedToken);
+      } else {
         localStorage.removeItem('adminToken');
       }
     }
     setIsLoading(false);
+    return clearExpiryTimer;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (password) => {
@@ -86,6 +123,8 @@ const useAuth = () => {
         localStorage.setItem('adminToken', data.token);
         setToken(data.token);
         setIsLoggedIn(true);
+        setSessionExpired(false);
+        scheduleExpiry(data.token);
         return { success: true };
       } else {
         const err = await response.json();
@@ -97,17 +136,19 @@ const useAuth = () => {
   };
 
   const logout = () => {
+    clearExpiryTimer();
     localStorage.removeItem('adminToken');
     setToken(null);
     setIsLoggedIn(false);
+    setSessionExpired(false);
   };
 
-  return { isLoggedIn, isLoading, login, logout, token };
+  return { isLoggedIn, isLoading, login, logout, token, sessionExpired, expireSession };
 };
 
 /* ─── LoginForm ─── */
 
-const LoginForm = ({ onLogin }) => {
+const LoginForm = ({ onLogin, sessionExpired }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -125,6 +166,9 @@ const LoginForm = ({ onLogin }) => {
     <div className={styles.loginContainer}>
       <div className={styles.loginForm}>
         <h2>Jung Dam 관리자</h2>
+        {sessionExpired && !error && (
+          <div className={styles.notice}>세션이 만료되었습니다. 다시 로그인해주세요.</div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
             <label className={styles.label}>비밀번호</label>
@@ -183,9 +227,10 @@ const toCategoryDraft = (c) => ({
   description: normalizeLocalizedField(c.description),
 });
 
-const CategoryManager = ({ categories, patchMenu, refreshMenu, showStatus, onClose }) => {
+const CategoryManager = ({ categories, currency, patchMenu, refreshMenu, showStatus, onClose }) => {
   const [draft, setDraft] = useState(() => categories.map(toCategoryDraft));
   const [newName, setNewName] = useState({ ko: '', en: '' });
+  const [currencyDraft, setCurrencyDraft] = useState(currency || DEFAULT_CURRENCY);
   const [busy, setBusy] = useState(false);
 
   const idKey = categories.map((c) => c.id).join(',');
@@ -195,6 +240,16 @@ const CategoryManager = ({ categories, patchMenu, refreshMenu, showStatus, onClo
     setDraft(categories.map(toCategoryDraft));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idKey]);
+
+  useEffect(() => { setCurrencyDraft(currency || DEFAULT_CURRENCY); }, [currency]);
+
+  const persistCurrency = async () => {
+    const v = currencyDraft.trim() || DEFAULT_CURRENCY;
+    if (v === (currency || DEFAULT_CURRENCY)) return;
+    const { ok, json } = await patchMenu({ action: 'updateSettings', data: { currency: v } });
+    if (ok) { showStatus('success', '통화 기호가 저장되었습니다.'); refreshMenu(); }
+    else showStatus('error', json.error || '통화 기호 저장에 실패했습니다.');
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -263,6 +318,19 @@ const CategoryManager = ({ categories, patchMenu, refreshMenu, showStatus, onClo
         </div>
 
         <div className={styles.modalBody}>
+          <div className={styles.settingsRow}>
+            <label className={styles.label} style={{ marginBottom: 0 }}>통화 기호</label>
+            <input
+              className={styles.currencyInput}
+              value={currencyDraft}
+              onChange={(e) => setCurrencyDraft(e.target.value)}
+              onBlur={persistCurrency}
+              maxLength={4}
+              placeholder="$"
+            />
+            <span className={styles.settingsHint}>예: $, ₩, € · 숫자 가격 앞에 표시됩니다</span>
+          </div>
+
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={draft.map((c) => c.id)} strategy={verticalListSortingStrategy}>
               <ul className={styles.categoryManagerList}>
@@ -348,7 +416,7 @@ const CategoryManager = ({ categories, patchMenu, refreshMenu, showStatus, onClo
 /* ─── AdminPage ─── */
 
 export default function AdminPage() {
-  const { isLoggedIn, isLoading, login, logout, token } = useAuth();
+  const { isLoggedIn, isLoading, login, logout, token, sessionExpired, expireSession } = useAuth();
 
   const [menuData, setMenuData] = useState({ categories: [] });
   const [dataLoading, setDataLoading] = useState(true);
@@ -357,6 +425,8 @@ export default function AdminPage() {
   const [editingItem, setEditingItem] = useState(null);
   const [status, setStatus] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [imageDragOver, setImageDragOver] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
@@ -386,6 +456,7 @@ export default function AdminPage() {
   // (both locales + stable item ids), so no client-side merge is needed.
   const fetchMenuData = async () => {
     const res = await fetch('/api/menu?format=full', { headers: getAuthHeaders() });
+    if (res.status === 401) { expireSession(); throw new Error('Session expired'); }
     if (!res.ok) throw new Error('Failed to load menu data');
     return res.json();
   };
@@ -477,7 +548,7 @@ export default function AdminPage() {
   }, [menuData, selectedCategory]);
 
   if (isLoading) return <div className={styles.loginContainer}><p>로딩 중...</p></div>;
-  if (!isLoggedIn) return <LoginForm onLogin={login} />;
+  if (!isLoggedIn) return <LoginForm onLogin={login} sessionExpired={sessionExpired} />;
   if (dataLoading) return <div className={styles.loginContainer}><p>메뉴 데이터 로딩 중...</p></div>;
 
   const currentCategory = menuData?.categories?.find((c) => c.id === selectedCategory);
@@ -493,7 +564,7 @@ export default function AdminPage() {
   // The unified item shape sent to the API (single price, localized text objects).
   const buildItemPayload = (item) => ({
     image: item.image || '',
-    price: addDollar(item.price),
+    price: stripCurrency(item.price),
     title: normalizeLocalizedField(item.title),
     ingredients: normalizeLocalizedField(item.ingredients),
   });
@@ -506,6 +577,7 @@ export default function AdminPage() {
       headers: getAuthHeaders(),
       body: JSON.stringify(body),
     });
+    if (res.status === 401) { expireSession(); return { ok: false, json: { error: '세션이 만료되었습니다.' } }; }
     const json = await res.json().catch(() => ({}));
     return { ok: res.ok, json };
   };
@@ -586,14 +658,35 @@ export default function AdminPage() {
     reorderItemsOnServer(currentCategory.id, newOrder);
   };
 
-  // Title (at least one locale) and price are required.
+  // Title (at least one locale) and a valid price are required (blocking).
   const validateItem = (item) => {
     const errors = {};
     const koTitle = (item.title?.ko || '').trim();
     const enTitle = (item.title?.en || '').trim();
     if (!koTitle && !enTitle) errors.title = '메뉴 이름을 입력하세요 (한국어 또는 영어).';
-    if (!String(item.price ?? '').trim()) errors.price = '가격을 입력하세요.';
+
+    const priceStr = String(item.price ?? '').trim();
+    if (!priceStr) {
+      errors.price = '가격을 입력하세요.';
+    } else if (/^[\d.,\s]+$/.test(priceStr)) {
+      // Looks numeric → must parse to a non-negative number.
+      const n = Number(priceStr.replace(/,/g, ''));
+      if (!Number.isFinite(n) || n < 0) errors.price = '올바른 가격을 입력하세요. (예: 12.00)';
+    }
+    // Otherwise it's a non-numeric literal (e.g. "시가") — allowed as-is.
     return errors;
+  };
+
+  // Soft, non-blocking notices shown while editing.
+  const getWarnings = (item) => {
+    if (!item) return [];
+    const warnings = [];
+    if (!item.image) warnings.push('이미지가 없습니다.');
+    const ko = (item.title?.ko || '').trim();
+    const en = (item.title?.en || '').trim();
+    if (ko && !en) warnings.push('영어 이름이 비어 있습니다.');
+    if (en && !ko) warnings.push('한국어 이름이 비어 있습니다.');
+    return warnings;
   };
 
   const addItem = () => {
@@ -627,7 +720,7 @@ export default function AdminPage() {
         image: item.image || '',
         title: normalizeLocalizedField(item.title),
         ingredients: normalizeLocalizedField(item.ingredients),
-        price: stripDollar(item.price),
+        price: stripCurrency(item.price),
         categoryId: selectedCategory,
       });
       setHasUnsavedChanges(false);
@@ -698,31 +791,50 @@ export default function AdminPage() {
   const handleImageUpload = async (file) => {
     if (!file) return;
     if (!editingItem) { showStatus('info', '먼저 편집할 항목을 선택해주세요.'); return; }
+    if (!file.type.startsWith('image/')) {
+      showStatus('error', '이미지 파일만 업로드할 수 있습니다.');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      showStatus('error', '파일이 너무 큽니다 (최대 4.5MB).');
+      return;
+    }
+    setImageUploading(true);
+    setUploadProgress(0);
     try {
-      setImageUploading(true);
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
+      // XHR (not fetch) so we can report upload progress.
+      const result = await new Promise((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/upload');
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        };
+        xhr.onload = () => {
+          let body = {};
+          try { body = JSON.parse(xhr.responseText); } catch { /* ignore */ }
+          resolve({ status: xhr.status, ok: xhr.status >= 200 && xhr.status < 300, body });
+        };
+        xhr.onerror = () => resolve({ status: 0, ok: false, body: {} });
+        const formData = new FormData();
+        formData.append('file', file);
+        xhr.send(formData);
       });
-      if (res.ok) {
-        const data = await res.json();
+
+      if (result.status === 401) { expireSession(); return; }
+      if (result.ok) {
         // A previous unsaved upload (if any) is now superseded — delete it.
         discardSessionUploads();
-        uploadsRef.current = [data.imageUrl];
-        setEditingItem((prev) => ({ ...prev, image: data.imageUrl }));
+        uploadsRef.current = [result.body.imageUrl];
+        setEditingItem((prev) => ({ ...prev, image: result.body.imageUrl }));
         setHasUnsavedChanges(true);
         showStatus('success', '이미지 업로드 완료');
       } else {
-        const err = await res.json();
-        showStatus('error', `업로드 실패: ${err.error}`);
+        showStatus('error', `업로드 실패: ${result.body.error || '오류가 발생했습니다.'}`);
       }
-    } catch {
-      showStatus('error', '이미지 업로드 중 오류가 발생했습니다.');
     } finally {
       setImageUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -737,6 +849,7 @@ export default function AdminPage() {
       {showCategoryManager && (
         <CategoryManager
           categories={menuData?.categories || []}
+          currency={menuData?.currency || DEFAULT_CURRENCY}
           patchMenu={patchMenu}
           refreshMenu={refreshMenu}
           showStatus={showStatus}
@@ -837,7 +950,7 @@ export default function AdminPage() {
                               <div className={styles.itemTitle}>
                                 {getLocalizedValue(item.title, DEFAULT_LOCALE) || '제목 없음'}
                               </div>
-                              <div className={styles.itemMeta}>{item.price || '-'}</div>
+                              <div className={styles.itemMeta}>{formatPrice(item.price, menuData.currency) || '-'}</div>
                             </button>
                           </SortableRow>
                         ))}
@@ -929,8 +1042,15 @@ export default function AdminPage() {
                   onChange={(e) => handleImageUpload(e.target.files[0])}
                 />
                 <div
-                  className={styles.imageUploadArea}
+                  className={`${styles.imageUploadArea} ${imageDragOver ? styles.imageUploadAreaDragOver : ''}`}
                   onClick={() => !imageUploading && fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); if (!imageUploading) setImageDragOver(true); }}
+                  onDragLeave={() => setImageDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setImageDragOver(false);
+                    if (!imageUploading) handleImageUpload(e.dataTransfer.files?.[0]);
+                  }}
                 >
                   {editingItem.image && (
                     <img src={editingItem.image} alt="미리보기" className={styles.imageUploadPreview} />
@@ -944,12 +1064,17 @@ export default function AdminPage() {
                   {!editingItem.image && !imageUploading && (
                     <div className={styles.imageUploadPlaceholder}>
                       <i className="bi bi-image"></i>
-                      <span>클릭하여 이미지 업로드</span>
+                      <span>{imageDragOver ? '여기에 놓으세요' : '클릭 또는 드래그하여 업로드'}</span>
+                      <span className={styles.imageHint}>JPG/PNG · 최대 4.5MB</span>
                     </div>
                   )}
                   {imageUploading && (
                     <div className={styles.imageSpinnerOverlay}>
-                      <i className="bi bi-arrow-repeat"></i> 업로드 중...
+                      <i className="bi bi-arrow-repeat"></i>
+                      <span>업로드 중… {uploadProgress}%</span>
+                      <div className={styles.uploadProgressTrack}>
+                        <div className={styles.uploadProgressBar} style={{ width: `${uploadProgress}%` }} />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -959,7 +1084,7 @@ export default function AdminPage() {
               <div className={styles.formGroup}>
                 <label className={styles.label}>가격</label>
                 <div className={`${styles.priceInputWrapper} ${validationErrors.price ? styles.inputError : ''}`}>
-                  <span className={styles.pricePrefix}>$</span>
+                  <span className={styles.pricePrefix}>{menuData.currency || DEFAULT_CURRENCY}</span>
                   <input
                     type="text"
                     inputMode="decimal"
@@ -1020,6 +1145,13 @@ export default function AdminPage() {
                   />
                 </div>
               </div>
+
+              {getWarnings(editingItem).length > 0 && (
+                <div className={styles.warningBox}>
+                  <i className="bi bi-exclamation-triangle" />
+                  <span>{getWarnings(editingItem).join(' ')}</span>
+                </div>
+              )}
 
               {/* Desktop buttons */}
               <div className={styles.buttonGroup}>
